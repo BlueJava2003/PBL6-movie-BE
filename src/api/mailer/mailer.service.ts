@@ -8,8 +8,8 @@ export class MailerService {
 
   constructor() {
     const options: MailerOptions = {
-      host: 'smtp.example.com',
-      port: 587,
+      service: "gmail",
+      port: 465,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,

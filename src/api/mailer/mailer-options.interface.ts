@@ -1,5 +1,5 @@
 export interface MailerOptions {
-    host: string;
+    service: string;
     port: number;
     secure: boolean;
     auth: {
