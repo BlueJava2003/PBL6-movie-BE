@@ -34,3 +34,35 @@ model BackList {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
+model Room {
+  id Int @id @default(autoincrement())
+  roomName String
+  capacity Int
+  createdAt DateTime
+  updatedAt DateTime
+  seatStates SeatState[]
+}
+
+model SeatState {
+  id Int  @id @default(autoincrement())
+  room Room @relation(fields: [roomId],references: [id])
+  roomId Int 
+  seat Seat @relation(fields: [seatId],references: [id])
+  seatId Int
+  createdAt DateTime
+  updatedAt DateTime
+  // booking Booking[]
+}
+model Seat {
+  id Int @id @default(autoincrement())
+  name String @unique
+  seatType SeatType @relation(fields: [seatTypeId],references: [id])
+  seatTypeId Int
+  seatStates SeatState[]
+}
+model SeatType {
+  id Int @id @default(autoincrement())
+  name String @unique
+  price Int
+  seats Seat[]
+}
