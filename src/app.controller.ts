@@ -4,7 +4,8 @@ import { AuthGuard } from './api/v1/auth/auth.gruad';
 import { RolesGuard } from './api/v1/auth/role.gruad';
 import { Roles } from './api/decorator/role.decorator';
 import { Role } from '@prisma/client';
-
+import { ApiBearerAuth } from '@nestjs/swagger';
+@ApiBearerAuth()
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
