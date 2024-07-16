@@ -12,7 +12,8 @@ import { AuthModule } from './api/v1/auth/auth.module';
   imports: [
     ConfigModule.forRoot(),
     MailerModule,
-    AuthModule
+    AuthModule,
+    MailerModule
   ],
   controllers: [AppController],
   providers: [AppService,PrismaService],
