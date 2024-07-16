@@ -34,15 +34,6 @@ model BackList {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
-model Room {
-  id Int @id @default(autoincrement())
-  roomName String
-  capacity Int
-  createdAt DateTime
-  updatedAt DateTime
-  seatStates SeatState[]
-}
-
 model SeatState {
   id Int  @id @default(autoincrement())
   room Room @relation(fields: [roomId],references: [id])
@@ -65,4 +56,52 @@ model SeatType {
   name String @unique
   price Int
   seats Seat[]
+}
+
+model Category_movie {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  desc                String?
+  movie               Movie[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Movie{
+  id                  Int       @id @default(autoincrement())
+  name                String
+  desc                String?
+  duration            Int?
+  releaseDate         DateTime?
+  imageId             String?
+  category            Category_movie?  @relation(fields: [categoryId], references: [id])
+  categoryId          Int?
+  director            String?
+  actor               String?
+  language            String?
+  urlTrailer          String?
+  schedule            Schedule[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+model Schedule {
+  id                  Int       @id @default(autoincrement())
+  date                DateTime
+  timeStart           DateTime
+  timeEnd             DateTime
+  movie               Movie?    @relation(fields: [movieId], references: [id])
+  movieId             Int?
+  room                Room?     @relation(fields: [roomId], references: [id])
+  roomId              Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+model Room {
+  id                  Int       @id @default(autoincrement())
+  roomName            String
+  schedule            Schedule[]
+  capacity            String
+  seatStates          SeatState[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
