@@ -31,8 +31,6 @@ export class CategoryMovieController {
         return {message:'Update category movie successfully', res:result}
     }
     //get all category movie
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
     @Get('getAllCategoryMovie')
     @HttpCode(200)
     async getAllCategoryMovie (): Promise<{message:string,res:any}>{
@@ -40,8 +38,6 @@ export class CategoryMovieController {
         return {message:'Get list category movie successfully', res:result}
     }
     // get category moive id
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
     @Get('getCategoryMovieId/:id')
     @HttpCode(200)
     async getCategoryMovieId (@Param('id',ParseIntPipe) id:number): Promise<{message:string,res:any}>{

@@ -3,6 +3,7 @@ import { Category_movie } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { createCategoryDTO } from './dto/createCategory.dto';
 import { updateCategoryDTO } from './dto/updateCategory.dto';
+import { getCategoryMovieDTO } from './dto/getCategoryMovie.dto';
 
 @Injectable()
 export class CategoryMovieService {
@@ -18,9 +19,14 @@ export class CategoryMovieService {
         
     }
     //get all category
-    async getAllCategoryMovie():Promise<Category_movie[]>{
+    async getAllCategoryMovie():Promise<getCategoryMovieDTO[]>{
         try {
             const result = await this.prisma.category_movie.findMany({
+                select:{
+                    id:true,
+                    name:true,
+                    desc:true,
+                },
                 where:{
                     deleteAt:false
                 }
@@ -29,12 +35,16 @@ export class CategoryMovieService {
         } catch (error) {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
-        
     }
     //get category id
-    async getCategoryMovieId(id:number):Promise<Category_movie|[]>{
+    async getCategoryMovieId(id:number):Promise<getCategoryMovieDTO>{
         try {
             const result = await this.prisma.category_movie.findUnique({
+                select:{
+                    id:true,
+                    name:true,
+                    desc:true,
+                },
                 where:{
                     id:id,
                     deleteAt:false
