@@ -7,17 +7,19 @@ import { HttpExceptionFilter } from './api/filters/global-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
   app.useGlobalInterceptors(new GlobalResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('App pets')
-    .setDescription('The app pet API description')
+    .setTitle('Booking')
+    .setDescription('Movie Ticket Booking API')
     .setVersion('1.0')
-    .addTag('pets')
+    .addTag('Booking')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
