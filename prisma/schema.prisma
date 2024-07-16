@@ -52,7 +52,7 @@ model Movie{
   name                String
   desc                String?
   duration            Int?
-  releaseDate        DateTime?
+  releaseDate         DateTime?
   imageId             String?
   category            Category_movie?  @relation(fields: [categoryId], references: [id])
   categoryId          Int?
