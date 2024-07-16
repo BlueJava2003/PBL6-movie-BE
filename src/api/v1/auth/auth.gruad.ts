@@ -26,7 +26,7 @@ import {
         );
         request['payload'] = payload;
       } catch {
-        throw new UnauthorizedException('is still young, so it is not allowed');
+        throw new UnauthorizedException('Token expired');
       }
       return true;
     }
