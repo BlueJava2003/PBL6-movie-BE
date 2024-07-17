@@ -43,4 +43,12 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+  async findAllSeat(): Promise<Seat[]> {
+    try {
+      const allSeats = await this.prisma.seat.findMany();
+      return allSeats;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

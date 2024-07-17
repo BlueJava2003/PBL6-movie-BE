@@ -30,4 +30,9 @@ export class SeatController {
     const seat = await this.seatService.createManySeats(createManySeatsDto);
     return { message: 'Create successfully!', res: seat };
   }
+  @Get()
+  async findAllSeat(): Promise<{ message: string; res: any }> {
+    const allSeat = await this.seatService.findAllSeat();
+    return { message: 'Successfull!', res: allSeat };
+  }
 }
