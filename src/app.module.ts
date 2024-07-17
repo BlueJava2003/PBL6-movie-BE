@@ -6,6 +6,7 @@ import { MailerModule } from './api/mailer/mailer.module';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
+import { MovieModule } from './api/v1/movie/movie.module';
 
 
 
@@ -14,8 +15,8 @@ import { CategoryMovieModule } from './api/v1/category-movie/category-movie.modu
     ConfigModule.forRoot(),
     MailerModule,
     AuthModule,
-    MailerModule,
-    CategoryMovieModule
+    CategoryMovieModule,
+    MovieModule
   ],
   controllers: [AppController],
   providers: [AppService,PrismaService],
