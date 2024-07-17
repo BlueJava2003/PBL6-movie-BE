@@ -89,4 +89,12 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+  async removeAllSeat(): Promise<void> {
+    try {
+      await this.prisma.seatState.deleteMany();
+      await this.prisma.seat.deleteMany();
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
