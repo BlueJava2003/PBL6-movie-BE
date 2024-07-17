@@ -29,7 +29,7 @@ export class ScheduleService {
                 }
             })
             if(!check)
-                throw new HttpException(`Room id not found `, HttpStatus.BAD_REQUEST)
+                throw new HttpException(`Movie id not found `, HttpStatus.BAD_REQUEST)
             const result = await this.prisma.schedule.create({data:{...data}});
             return result;
         } catch (error) {
