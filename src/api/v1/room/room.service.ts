@@ -40,14 +40,9 @@ export class RoomService {
     }
   }
 
-  async updateSeatType(
-    id: number,
-    updateRoomDto: UpdateRoomDto,
-  ): Promise<Room> {
+  //Update room info
+  async updateRoom(id: number, updateRoomDto: UpdateRoomDto): Promise<Room> {
     try {
-      const room = await this.findOneRoom(id);
-      if (!room)
-        throw new HttpException('Seat Type Not Found!', HttpStatus.BAD_REQUEST);
       const updatedRoom = await this.prisma.room.update({
         where: { id },
         data: updateRoomDto,

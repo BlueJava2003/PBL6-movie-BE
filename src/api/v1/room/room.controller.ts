@@ -44,10 +44,7 @@ export class RoomController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoomDto: UpdateRoomDto,
   ): Promise<{ message: string; res: any }> {
-    const updatedRoom = await this.roomService.updateSeatType(
-      +id,
-      updateRoomDto,
-    );
+    const updatedRoom = await this.roomService.updateRoom(+id, updateRoomDto);
     return { message: 'Updated successfully!', res: updatedRoom };
   }
 
