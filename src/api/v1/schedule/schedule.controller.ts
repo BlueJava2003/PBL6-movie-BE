@@ -13,8 +13,8 @@ import { UpdateScheduleDTO } from './dto/updateSchedule.dto';
 export class ScheduleController {
     constructor(private readonly ScheduleService:ScheduleService){}
     //create Schedule movie
-    // @UseGuards(AuthGuard, RolesGuard)
-    // @Roles(Role.ADMIN)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
     @Post('createSchedule')
     @HttpCode(200)
     async createSchedule(@Body() body:CreateScheduleDTO):Promise<{message:string,res:any}>{
@@ -22,8 +22,8 @@ export class ScheduleController {
         return {message:'Create Schedule movie successfully', res:result}
     }
     //update Schedule movie
-    // @UseGuards(AuthGuard, RolesGuard)
-    // @Roles(Role.ADMIN)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
     @Put('updateSchedule/:id')
     @HttpCode(200)
     async updateSchedule(@Body() body:UpdateScheduleDTO, @Param('id',ParseIntPipe) id:number):Promise<{message:string,res:any}>{
@@ -45,8 +45,8 @@ export class ScheduleController {
         return {message:`Get Schedule movie id ${id} successfully`, res:result}
     }
     //delete Schedule movie
-    // @UseGuards(AuthGuard, RolesGuard)
-    // @Roles(Role.ADMIN)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
     @Delete('deleteSchedule/:id')
     @HttpCode(200)
     async deleteSchedule (@Param('id',ParseIntPipe) id:number): Promise<{message:string}>{
