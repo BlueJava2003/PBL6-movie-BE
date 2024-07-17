@@ -26,6 +26,19 @@ export class CategoryMovieService {
                     id:true,
                     name:true,
                     desc:true,
+                    movie:{
+                        select:{
+                            id:true,
+                            name:true,
+                            duration:true,
+                            releaseDate:true,
+                            desc:true,
+                            director: true,
+                            actor: true,
+                            language:true,
+                            urlTrailer:true,
+                        },
+                    }
                 },
                 where:{
                     deleteAt:false
@@ -44,6 +57,19 @@ export class CategoryMovieService {
                     id:true,
                     name:true,
                     desc:true,
+                    movie:{
+                        select:{
+                            id:true,
+                            name:true,
+                            duration:true,
+                            releaseDate:true,
+                            desc:true,
+                            director: true,
+                            actor: true,
+                            language:true,
+                            urlTrailer:true,
+                        },
+                    }
                 },
                 where:{
                     id:id,
