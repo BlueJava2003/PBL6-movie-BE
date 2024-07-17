@@ -7,7 +7,7 @@ export class GlobalResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map(data => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
+        status: context.switchToHttp().getResponse().statusCode,
         message: data.message,
         data:data.res || ''
       }))
