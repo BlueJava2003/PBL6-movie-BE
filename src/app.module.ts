@@ -7,6 +7,7 @@ import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
 import { MovieModule } from './api/v1/movie/movie.module';
+import { ScheduleModule } from './api/v1/schedule/schedule.module';
 
 
 
@@ -16,7 +17,8 @@ import { MovieModule } from './api/v1/movie/movie.module';
     MailerModule,
     AuthModule,
     CategoryMovieModule,
-    MovieModule
+    MovieModule,
+    ScheduleModule
   ],
   controllers: [AppController],
   providers: [AppService,PrismaService],
