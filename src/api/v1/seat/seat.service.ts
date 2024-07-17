@@ -9,6 +9,8 @@ import { UpdateSeatDto } from './dto/update-seat.dto';
 @Injectable()
 export class SeatService {
   constructor(private prisma: PrismaService) {}
+
+  // Create new seat
   async createSeat(createSeatDto: CreateSeatDto): Promise<Seat> {
     try {
       const seatType = await this.prisma.seatType.findUnique({
@@ -24,6 +26,8 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  // Create new seat at the same time
   async createManySeats(creatManySeatsDto: CreateManySeatsDto) {
     try {
       const { rows, seatsPerRow, seatTypeId, startChar } = creatManySeatsDto;
@@ -44,6 +48,8 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //Find all seat exists
   async findAllSeat(): Promise<Seat[]> {
     try {
       const allSeats = await this.prisma.seat.findMany();
@@ -52,6 +58,8 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //Find a seat
   async findOneSeat(id: number): Promise<Seat> {
     try {
       const seat = await this.prisma.seat.findUnique({ where: { id } });
@@ -60,6 +68,8 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //Update a seat info
   async updateSeat(
     id: number,
     updateSeatTypeDto: UpdateSeatDto,
@@ -77,6 +87,8 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //Remove a seat
   async removeSeat(id: number): Promise<void> {
     try {
       await this.prisma.seatState.deleteMany({
@@ -89,10 +101,13 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //Remove all seats in table
   async removeAllSeat(): Promise<void> {
     try {
-      await this.prisma.seatState.deleteMany();
-      await this.prisma.seat.deleteMany();
+      const deleteSeatState = this.prisma.seatState.deleteMany();
+      const deleteSeat = this.prisma.seat.deleteMany();
+      await this.prisma.$transaction([deleteSeatState, deleteSeat]);
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }

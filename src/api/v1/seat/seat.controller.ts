@@ -61,7 +61,7 @@ export class SeatController {
     await this.seatService.removeSeat(id);
     return { message: 'Delete successfully!', res: null };
   }
-  @Delete('/all')
+  @Delete('all')
   async removeAllSeat(): Promise<{ message: string; res: any }> {
     await this.seatService.removeAllSeat();
     return { message: 'Delete successfully!', res: null };
