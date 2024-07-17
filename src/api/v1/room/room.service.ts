@@ -20,8 +20,14 @@ export class RoomService {
     }
   }
 
-  findAll() {
-    return `This action returns all room`;
+  //Find all room existed
+  async findAllRooms(): Promise<Room[]> {
+    try {
+      const allRooms = await this.prisma.room.findMany();
+      return allRooms;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   findOne(id: number) {

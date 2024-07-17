@@ -24,8 +24,9 @@ export class RoomController {
   }
 
   @Get()
-  findAll() {
-    return this.roomService.findAll();
+  async findAll(): Promise<{ message: string; res: any }> {
+    const allRooms = await this.roomService.findAllRooms();
+    return { message: 'Successfull!', res: allRooms };
   }
 
   @Get(':id')
