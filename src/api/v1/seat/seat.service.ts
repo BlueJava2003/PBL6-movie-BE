@@ -101,15 +101,4 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
-
-  //Remove all seats in table
-  async removeAllSeat(): Promise<void> {
-    try {
-      const deleteSeatState = this.prisma.seatState.deleteMany();
-      const deleteSeat = this.prisma.seat.deleteMany();
-      await this.prisma.$transaction([deleteSeatState, deleteSeat]);
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
 }
