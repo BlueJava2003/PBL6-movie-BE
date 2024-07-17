@@ -53,7 +53,16 @@ export class RoomService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} room`;
+  async removeRoom(id: number): Promise<void> {
+    try {
+      await this.prisma.seatState.deleteMany({ where: { roomId: id } });
+      await this.prisma.room.delete({
+        where: {
+          id,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 }

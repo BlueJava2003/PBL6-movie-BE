@@ -49,7 +49,10 @@ export class RoomController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomService.remove(+id);
+  async removeRoom(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string; res: any }> {
+    await this.roomService.removeRoom(id);
+    return { message: 'Delete successfully!', res: null };
   }
 }
