@@ -3,7 +3,6 @@ export class getMovieDTO{
     duration:number
     releaseDate:Date
     desc:string
-    categoryId : number
     director: string
     actor: string
     language:string

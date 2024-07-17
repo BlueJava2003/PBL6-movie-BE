@@ -47,11 +47,17 @@ export class MovieService {
                     duration:true,
                     releaseDate:true,
                     desc:true,
-                    categoryId : true,
                     director: true,
                     actor: true,
                     language:true,
                     urlTrailer:true,
+                    category:{
+                        select:{
+                            id:true,
+                            name:true,
+                            desc:true,
+                        }
+                    }
                 },
                 where:{
                     deleteAt:false
@@ -73,11 +79,17 @@ export class MovieService {
                     duration:true,
                     releaseDate:true,
                     desc:true,
-                    categoryId : true,
                     director: true,
                     actor: true,
                     language:true,
                     urlTrailer:true,
+                    category:{
+                        select:{
+                            id:true,
+                            name:true,
+                            desc:true,
+                        }
+                    }
                 },
                 where:{
                     id:id,
@@ -90,6 +102,55 @@ export class MovieService {
         } catch (error) {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
+    }
+
+    //get all movie follow day
+    async getAllMovieFollowDay(date:Date):Promise<getMovieDTO[]>{
+        try {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const movies = await this.prisma.movie.findMany({
+                where: {
+                  schedule: {
+                    some: {
+                      date: {
+                        gte: startOfDay,
+                        lte: endOfDay,
+                      },
+                      deleteAt: false,
+                    },
+                  },
+                  deleteAt: false,
+                },
+                include: {
+                  schedule: {
+                    where: {
+                      date: {
+                        gte: startOfDay,
+                        lte: endOfDay,
+                      },
+                      deleteAt: false,
+                    },
+                    select: {
+                      id: true,
+                      date: true,
+                      timeStart: true,
+                      timeEnd: true,
+                      roomId: true,
+                    },
+                  },
+                  category: true,
+                },
+              });
+        return movies;
+        } catch (error) {
+            throw new HttpException(error,HttpStatus.BAD_REQUEST)
+        }
+         
     }
 
     // update Movie 

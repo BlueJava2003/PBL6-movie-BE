@@ -8,6 +8,7 @@ import { AuthGuard } from '../auth/auth.gruad';
 import { RolesGuard } from '../auth/role.gruad';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client'
+import { GetMovieFollowDay } from './dto/getMovieFollowDay.dto';
 
 @ApiBearerAuth()
 @ApiTags('movie')
@@ -60,6 +61,13 @@ export class MovieController {
         return { message:`Get movie id ${id} successfully`,res:result };
     }
 
+    //get movie follow day
+    @Post('getMovieFollowDay')
+    async getMovieFollowDay(@Body() body:GetMovieFollowDay):Promise<{message:string,res:any}>{
+        const {date} = body;
+        const result = await this.movieService.getAllMovieFollowDay(date);
+        return { message:`Get list movie follow day successfully`,res:result };
+    }
     //update movie
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
