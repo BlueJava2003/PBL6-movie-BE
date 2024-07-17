@@ -57,6 +57,15 @@ export class MovieService {
                             name:true,
                             desc:true,
                         }
+                    },
+                    schedule:{
+                        select: {
+                            id: true,
+                            date: true,
+                            timeStart: true,
+                            timeEnd: true,
+                            roomId: true,
+                          },
                     }
                 },
                 where:{
@@ -89,6 +98,15 @@ export class MovieService {
                             name:true,
                             desc:true,
                         }
+                    },
+                    schedule:{
+                        select: {
+                            id: true,
+                            date: true,
+                            timeStart: true,
+                            timeEnd: true,
+                            roomId: true,
+                          },
                     }
                 },
                 where:{
