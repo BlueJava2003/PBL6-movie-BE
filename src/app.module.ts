@@ -7,6 +7,7 @@ import { MailerModule } from './api/mailer/mailer.module';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
+import { RoomModule } from './api/v1/room/room.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CategoryMovieModule } from './api/v1/category-movie/category-movie.modu
     MailerModule,
     SeatTypeModule,
     CategoryMovieModule,
+    RoomModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
