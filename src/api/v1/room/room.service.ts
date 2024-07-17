@@ -30,12 +30,32 @@ export class RoomService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} room`;
+  //Find a room by ID
+  async findOneRoom(id: number): Promise<Room> {
+    try {
+      const room = await this.prisma.room.findUnique({ where: { id } });
+      return room;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
-    return `This action updates a #${id} room`;
+  async updateSeatType(
+    id: number,
+    updateRoomDto: UpdateRoomDto,
+  ): Promise<Room> {
+    try {
+      const room = await this.findOneRoom(id);
+      if (!room)
+        throw new HttpException('Seat Type Not Found!', HttpStatus.BAD_REQUEST);
+      const updatedRoom = await this.prisma.room.update({
+        where: { id },
+        data: updateRoomDto,
+      });
+      return updatedRoom;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   remove(id: number) {
