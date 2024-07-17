@@ -7,73 +7,74 @@ import {
 import { CreateSeatTypeDto } from './dto/create-seat-type.dto';
 import { UpdateSeatTypeDto } from './dto/update-seat-type.dto';
 import { PrismaService } from 'src/prisma.service';
+import { SeatType } from '@prisma/client';
 
 @Injectable()
 export class SeatTypeService {
   constructor(private prisma: PrismaService) {}
-  async createSeat(createSeatTypeDto: CreateSeatTypeDto) {
+  async createSeatType(
+    createSeatTypeDto: CreateSeatTypeDto,
+  ): Promise<SeatType> {
     try {
-      const seat = await this.prisma.seatType.create({
+      const seatType = await this.prisma.seatType.create({
         data: createSeatTypeDto,
       });
-      return seat;
-    } catch (err) {
-      throw new HttpException('Create fail!', HttpStatus.BAD_REQUEST);
+      return seatType;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async findAllSeat() {
+  async findAllSeatType(): Promise<SeatType[]> {
     try {
-      const allSeats = await this.prisma.seatType.findMany();
-      return allSeats;
-    } catch (err) {
-      throw new HttpException(
-        'Something wrong happend!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const allSeatTypes = await this.prisma.seatType.findMany();
+      return allSeatTypes;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async findOne(id: number) {
+  async findOneSeatType(id: number): Promise<SeatType> {
     try {
-      const seat = await this.prisma.seatType.findUnique({ where: { id } });
-      return seat;
-    } catch (err) {
-      throw new HttpException(
-        'Something wrong happend!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const seatType = await this.prisma.seatType.findUnique({ where: { id } });
+      return seatType;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async updateSeat(id: number, updateSeatTypeDto: UpdateSeatTypeDto) {
+  async updateSeatType(
+    id: number,
+    updateSeatTypeDto: UpdateSeatTypeDto,
+  ): Promise<SeatType> {
     try {
-      const seatType = await this.prisma.seatType.findUnique({
-        where: { id },
-      });
-      if (!seatType) throw new NotFoundException('Seat Type Not Found!');
+      const seatType = await this.findOneSeatType(id);
+      if (!seatType)
+        throw new HttpException('Seat Type Not Found!', HttpStatus.BAD_REQUEST);
       const updatedSeat = await this.prisma.seatType.update({
         where: { id },
         data: updateSeatTypeDto,
       });
       return updatedSeat;
-    } catch (err) {
-      throw new HttpException('Update failed!', HttpStatus.CONFLICT);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async removeSeat(id: number) {
+  async removeSeatType(id: number): Promise<void> {
     try {
-      const seatType = await this.prisma.seatType.findUnique({ where: { id } });
-      if (!seatType) throw new NotFoundException('Seat Type Not Found!');
+      const seatType = await this.findOneSeatType(id);
+      if (!seatType) {
+        throw new HttpException('Seat Type Not Found!', HttpStatus.BAD_REQUEST);
+      }
       await this.prisma.seat.deleteMany({
         where: {
           seatTypeId: id,
         },
       });
       await this.prisma.seatType.delete({ where: { id } });
-    } catch (err) {
-      throw new HttpException('Delete failed', HttpStatus.CONFLICT);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 }
