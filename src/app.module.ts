@@ -1,3 +1,4 @@
+import { SeatTypeModule } from './api/v1/seat-type/seat-type.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -6,15 +7,9 @@ import { MailerModule } from './api/mailer/mailer.module';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 
-
-
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    MailerModule,
-    AuthModule
-  ],
+  imports: [ConfigModule.forRoot(), MailerModule, AuthModule, SeatTypeModule],
   controllers: [AppController],
-  providers: [AppService,PrismaService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

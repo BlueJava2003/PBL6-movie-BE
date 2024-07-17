@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma.service';
 
 @Module({
   controllers: [SeatTypeController],
-  providers: [SeatTypeService],
-  imports: [PrismaService],
+  providers: [SeatTypeService, PrismaService],
+  imports: [],
 })
 export class SeatTypeModule {}
