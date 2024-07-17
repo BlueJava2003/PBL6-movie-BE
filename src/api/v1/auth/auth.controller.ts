@@ -1,12 +1,12 @@
-import { Controller,  Post, Body, Res, HttpStatus,HttpCode, UseGuards } from '@nestjs/common';
+import { Controller,  Post, Body, Headers, HttpStatus,HttpCode, UseGuards, Req, HttpException } from '@nestjs/common';
 import { LoginDTO } from './dto/login.dto';
 import { ApiTags ,ApiBearerAuth} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { registerDto } from './dto/register.dto';
+import { refreshTokenDTO } from './dto/refreshToken.dto';
+import { changePasswordDTO } from './dto/changePassword.dto';
 import { AuthGuard } from './auth.gruad';
-import { RolesGuard } from './role.gruad';
-import { Roles } from 'src/api/decorator/role.decorator';
-import { Role } from '@prisma/client';
+import { forgotPasswordDTO } from './dto/forgotPassword.dto';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -30,5 +30,53 @@ export class AuthController {
     async login(@Body() body: LoginDTO): Promise<{ message: string; res: any }> {
       const result = await this.authService.login(body);
       return { message: 'Logged in successfully!', res: result };
+    }
+    //refresh
+    @Post('refreshToken')
+    @HttpCode(HttpStatus.OK)
+    async refreshToken (@Body() body:refreshTokenDTO): Promise<{ message: string; res: any }>{
+      const result = await this.authService.refreshToken(body);
+      return { message: 'Refresh token in successfully!', res: result };
+    }
+    //changePassword
+    @UseGuards(AuthGuard)
+    @Post('changePassword')
+    @HttpCode(HttpStatus.OK)
+    async changePassword (@Body() body:changePasswordDTO,@Req() req): Promise<any>{
+      try {
+        const authId = req.payload.id;
+        const result = await this.authService.changePassword(body,authId);
+        return { message: 'Change password in successfully!', res: result };
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST)
+      }
+     
+    }
+    //forgotPassword
+    @Post('forgotPassword')
+    @HttpCode(HttpStatus.OK)
+    async forgotPassword (@Body() body:forgotPasswordDTO,@Req() req): Promise<any>{
+      try {
+        const result = await this.authService.forgotPassword(body);
+        return { message: 'Please check your email!'};
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST)
+      }
+     
+    }
+
+    //logout
+    @UseGuards(AuthGuard)
+    @Post('logout')
+    @HttpCode(HttpStatus.OK)
+    async logout (@Headers('authorization') auth: string,@Req() req): Promise<any>{
+      try {
+        const authId = req.payload.id;
+        const result = await this.authService.logout(authId,auth);
+        return { message: 'logout in successfully!', res: result };
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST)
+      }
+     
     }
 }
