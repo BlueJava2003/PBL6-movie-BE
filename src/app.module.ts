@@ -1,3 +1,4 @@
+import { SeatTypeModule } from './api/v1/seat-type/seat-type.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,17 +8,16 @@ import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MailerModule,
     AuthModule,
     MailerModule,
-    CategoryMovieModule
+    SeatTypeModule,
+    CategoryMovieModule,
   ],
   controllers: [AppController],
-  providers: [AppService,PrismaService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}
