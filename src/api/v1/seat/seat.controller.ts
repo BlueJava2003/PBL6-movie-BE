@@ -54,4 +54,11 @@ export class SeatController {
     );
     return { message: 'Updated successfully!', res: seatUpdated };
   }
+  @Delete(':id')
+  async removeSeat(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string; res: any }> {
+    await this.seatService.removeSeat(id);
+    return { message: 'Delete successfully!', res: null };
+  }
 }
