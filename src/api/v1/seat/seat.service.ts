@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma.service';
 import { Seat } from '@prisma/client';
 import { CreateManySeatsDto } from './dto/create-many-seats.dto';
 import { generateSeatNames } from 'src/api/util/createSeatNames.util';
+import { UpdateSeatDto } from './dto/update-seat.dto';
 
 @Injectable()
 export class SeatService {
@@ -55,6 +56,23 @@ export class SeatService {
     try {
       const seat = await this.prisma.seat.findUnique({ where: { id } });
       return seat;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
+  async updateSeat(
+    id: number,
+    updateSeatTypeDto: UpdateSeatDto,
+  ): Promise<Seat> {
+    try {
+      const seat = await this.findOneSeat(id);
+      if (!seat)
+        throw new HttpException('Seat Not Found!', HttpStatus.BAD_REQUEST);
+      const updatedSeat = await this.prisma.seat.update({
+        where: { id },
+        data: updateSeatTypeDto,
+      });
+      return updatedSeat;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }

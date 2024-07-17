@@ -12,6 +12,7 @@ import {
 import { SeatService } from './seat.service';
 import { CreateSeatDto } from './dto/create-seat.dto';
 import { CreateManySeatsDto } from './dto/create-many-seats.dto';
+import { UpdateSeatDto } from './dto/update-seat.dto';
 
 @Controller('seat')
 export class SeatController {
@@ -41,5 +42,16 @@ export class SeatController {
   ): Promise<{ message: string; res: any }> {
     const seat = await this.seatService.findOneSeat(id);
     return { message: 'Successfull!', res: seat };
+  }
+  @Put(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateSeatTypeDto: UpdateSeatDto,
+  ): Promise<{ message: string; res: any }> {
+    const seatUpdated = await this.seatService.updateSeat(
+      +id,
+      updateSeatTypeDto,
+    );
+    return { message: 'Updated successfully!', res: seatUpdated };
   }
 }
