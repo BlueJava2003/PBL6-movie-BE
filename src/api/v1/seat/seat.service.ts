@@ -51,4 +51,12 @@ export class SeatService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+  async findOneSeat(id: number): Promise<Seat> {
+    try {
+      const seat = await this.prisma.seat.findUnique({ where: { id } });
+      return seat;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

@@ -35,4 +35,11 @@ export class SeatController {
     const allSeat = await this.seatService.findAllSeat();
     return { message: 'Successfull!', res: allSeat };
   }
+  @Get(':id')
+  async findOneSeat(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string; res: any }> {
+    const seat = await this.seatService.findOneSeat(id);
+    return { message: 'Successfull!', res: seat };
+  }
 }
