@@ -20,8 +20,13 @@ export class SeatStateService {
     }
   }
 
-  findAll() {
-    return `This action returns all seatState`;
+  async findAllSeatState(): Promise<SeatState[]> {
+    try {
+      const allSeatStates = await this.prisma.seatState.findMany();
+      return allSeatStates;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   findOne(id: number) {

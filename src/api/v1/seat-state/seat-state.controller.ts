@@ -26,10 +26,10 @@ export class SeatStateController {
       await this.seatStateService.createSeatState(createSeatStateDto);
     return { message: 'Create successfully!', res: seatState };
   }
-
   @Get()
-  findAll() {
-    return this.seatStateService.findAll();
+  async findAllSeatState(): Promise<{ message: string; res: any }> {
+    const allSeatStates = await this.seatStateService.findAllSeatState();
+    return { message: 'Successfull!', res: allSeatStates };
   }
 
   @Get(':id')
