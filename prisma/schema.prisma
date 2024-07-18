@@ -81,7 +81,7 @@ model Schedule {
 }
 model Room {
   id                  Int       @id @default(autoincrement())
-  roomName            String
+  roomName            String    @unique
   schedule            Schedule[]
   capacity            String
   seatStates          SeatState[]

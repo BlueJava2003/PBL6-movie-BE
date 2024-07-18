@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
 export class CreateRoomDto {
   @ApiProperty({ description: 'Room Name', default: '01' })
@@ -7,7 +7,7 @@ export class CreateRoomDto {
   @IsNotEmpty()
   roomName: string;
   @ApiProperty({ description: 'Capacity', default: '50' })
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   capacity: string;
 }
