@@ -11,7 +11,7 @@ import { Role } from '@prisma/client'
 import { GetMovieFollowDay } from './dto/getMovieFollowDay.dto';
 import { SearchMovieDTO } from './dto/searchMovie.dto';
 import { PaginationParamsDto } from './dto/paginationParams.dto';
-import { TimezoneInterceptor } from 'src/api/interceptor/formatTimeZone.interceptor';
+
 
 @ApiBearerAuth()
 @ApiTags('movie')
@@ -36,7 +36,6 @@ export class MovieController {
     //get all movie
     
     @Get('getAllMovie')
-    @UseInterceptors(TimezoneInterceptor)
     async getAllMovie(@Query() { page, limit }: PaginationParamsDto,):Promise<{message:string,res:any}>{
         const result = await this.movieService.getAllMovie(page, limit)
         return { message:'Get list movie successfully',res:result };
