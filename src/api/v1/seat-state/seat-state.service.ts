@@ -4,6 +4,7 @@ import { UpdateSeatStateDto } from './dto/update-seat-state.dto';
 import { PrismaService } from 'src/prisma.service';
 import { SeatState } from '@prisma/client';
 import { CreateManySeatStatesDto } from './dto/create-many-seat-state';
+import { RoomService } from '../room/room.service';
 
 @Injectable()
 export class SeatStateService {
@@ -13,7 +14,19 @@ export class SeatStateService {
   ): Promise<SeatState> {
     try {
       const { roomId, seatId } = createSeatStateDto;
-      const isSeatExisted = await this.prisma.seatState.findUnique({
+      const isRoomExisted = await this.prisma.room.findUnique({
+        where: { id: roomId },
+      });
+      if (!isRoomExisted)
+        throw new HttpException('Room does not exist!', HttpStatus.BAD_REQUEST);
+      const isSeatExisted = await this.prisma.seat.findUnique({
+        where: { id: seatId },
+      });
+
+      if (!isSeatExisted)
+        throw new HttpException('Seat does not exist!', HttpStatus.BAD_REQUEST);
+
+      const isSeatStateExisted = await this.prisma.seatState.findUnique({
         where: {
           roomId_seatId: {
             roomId,
@@ -21,7 +34,7 @@ export class SeatStateService {
           },
         },
       });
-      if (isSeatExisted) {
+      if (isSeatStateExisted) {
         throw new HttpException('Seat State existed!', HttpStatus.BAD_REQUEST);
       }
       const seatState = await this.prisma.seatState.create({
@@ -53,7 +66,12 @@ export class SeatStateService {
 
   async findAllSeatState(): Promise<SeatState[]> {
     try {
-      const allSeatStates = await this.prisma.seatState.findMany();
+      const allSeatStates = await this.prisma.seatState.findMany({
+        include: {
+          room: true,
+          seat: true,
+        },
+      });
       return allSeatStates;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
@@ -64,6 +82,10 @@ export class SeatStateService {
     try {
       const seatState = await this.prisma.seatState.findUnique({
         where: { id },
+        include: {
+          room: true,
+          seat: true,
+        },
       });
       return seatState;
     } catch (error) {
@@ -71,28 +93,16 @@ export class SeatStateService {
     }
   }
 
-  async updateSeatState(
-    id: number,
-    updateSeatStateDto: UpdateSeatStateDto,
-  ): Promise<SeatState> {
-    try {
-      const seatState = await this.findOneSeatState(id);
-      if (!seatState)
-        throw new HttpException(
-          'Seat State Not Found!',
-          HttpStatus.BAD_REQUEST,
-        );
-      const updatedSeat = await this.prisma.seatState.update({
-        where: { id },
-        data: updateSeatStateDto,
-      });
-      return updatedSeat;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
   async removeSeatState(id: number): Promise<void> {
     try {
+      const isSeatStateExisted = await this.prisma.seatState.findUnique({
+        where: { id },
+      });
+      if (!isSeatStateExisted)
+        throw new HttpException(
+          'Seat State not found!',
+          HttpStatus.BAD_REQUEST,
+        );
       await this.prisma.seatState.delete({ where: { id } });
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);

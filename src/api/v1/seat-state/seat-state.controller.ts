@@ -26,8 +26,8 @@ import { CreateManySeatStatesDto } from './dto/create-many-seat-state';
 export class SeatStateController {
   constructor(private readonly seatStateService: SeatStateService) {}
 
-  // @UseGuards(AuthGuard, RolesGuard)
-  // @Roles(Role.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post()
   async createSeatState(
     @Body() createSeatStateDto: CreateSeatStateDto,
@@ -36,6 +36,8 @@ export class SeatStateController {
       await this.seatStateService.createSeatState(createSeatStateDto);
     return { message: 'Create successfully!', res: seatState };
   }
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('many')
   async createManySeatStates(
     @Body() createManySeatStatesDto: CreateManySeatStatesDto,
@@ -46,12 +48,16 @@ export class SeatStateController {
     return { message: 'Create successfully!', res: seatState };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get()
   async findAllSeatState(): Promise<{ message: string; res: any }> {
     const allSeatStates = await this.seatStateService.findAllSeatState();
     return { message: 'Successfull!', res: allSeatStates };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get(':id')
   async findOneSeatState(
     @Param('id', ParseIntPipe) id: number,
@@ -60,18 +66,8 @@ export class SeatStateController {
     return { message: 'Successfull!', res: seatState };
   }
 
-  @Put(':id')
-  async updateSeatState(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateSeatStateDto: UpdateSeatStateDto,
-  ): Promise<{ message: string; res: any }> {
-    const seatStateUpdated = await this.seatStateService.updateSeatState(
-      +id,
-      updateSeatStateDto,
-    );
-    return { message: 'Updated successfully!', res: seatStateUpdated };
-  }
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
   async removeSeatState(
     @Param('id', ParseIntPipe) id: number,
