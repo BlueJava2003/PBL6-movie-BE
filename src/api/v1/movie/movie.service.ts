@@ -38,7 +38,7 @@ export class MovieService {
     }
 
     //get all Movie
-    async getAllMovie():Promise<getMovieDTO[]>{
+    async getAllMovie(offset?: number, limit?: number):Promise<getMovieDTO[]>{
         try {
             const result = await this.prisma.movie.findMany({
                 select:{
@@ -51,6 +51,7 @@ export class MovieService {
                     actor: true,
                     language:true,
                     urlTrailer:true,
+                    imagePath:true,
                     category:{
                         select:{
                             id:true,
@@ -70,7 +71,9 @@ export class MovieService {
                 },
                 where:{
                     deleteAt:false
-                }
+                },
+                take: limit | 10,
+                skip: offset | 1,
             });
             return result;
         } catch (error) {
@@ -92,6 +95,7 @@ export class MovieService {
                     actor: true,
                     language:true,
                     urlTrailer:true,
+                    imagePath:true,
                     category:{
                         select:{
                             id:true,
@@ -230,6 +234,50 @@ export class MovieService {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
         
+    }
+
+    //search movie
+    async searchMovie(name: string): Promise<getMovieDTO[]> {
+        const result = await this.prisma.movie.findMany({
+            where: {
+                name: {
+                    contains: name,
+                    mode: 'insensitive'
+                },
+                deleteAt:false
+            },
+            select:{
+                id:true,
+                name:true,
+                duration:true,
+                releaseDate:true,
+                desc:true,
+                director: true,
+                actor: true,
+                language:true,
+                urlTrailer:true,
+                imagePath:true,
+                category:{
+                    select:{
+                        id:true,
+                        name:true,
+                        desc:true,
+                    }
+                },
+                schedule:{
+                    select: {
+                        id: true,
+                        date: true,
+                        timeStart: true,
+                        timeEnd: true,
+                        roomId: true,
+                      },
+                }
+            },
+        });
+        if(!result)
+            throw new HttpException('Not found',HttpStatus.NOT_FOUND)
+        return result;
     }
 
     async getMovieById(id:number): Promise< Movie >{

@@ -4,8 +4,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalResponseInterceptor } from './api/interceptor/res.interceptor';
 import { HttpExceptionFilter } from './api/filters/global-exception.filter';
+import { NextFunction, Request, Response } from 'express';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{ cors: true });
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -15,6 +16,7 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(new GlobalResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
+
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Booking')

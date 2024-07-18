@@ -37,6 +37,7 @@ export class CategoryMovieService {
                             actor: true,
                             language:true,
                             urlTrailer:true,
+                            imagePath:true,
                         },
                     }
                 },
@@ -68,6 +69,7 @@ export class CategoryMovieService {
                             actor: true,
                             language:true,
                             urlTrailer:true,
+                            imagePath:true,
                         },
                     }
                 },
