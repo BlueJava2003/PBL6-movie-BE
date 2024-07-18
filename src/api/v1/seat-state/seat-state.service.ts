@@ -72,8 +72,11 @@ export class SeatStateService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} seatState`;
+  async removeSeatState(id: number): Promise<void> {
+    try {
+      await this.prisma.seatState.delete({ where: { id } });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 }
