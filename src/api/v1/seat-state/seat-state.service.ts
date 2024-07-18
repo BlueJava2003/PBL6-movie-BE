@@ -52,8 +52,25 @@ export class SeatStateService {
     }
   }
 
-  update(id: number, updateSeatStateDto: UpdateSeatStateDto) {
-    return `This action updates a #${id} seatState`;
+  async updateSeatState(
+    id: number,
+    updateSeatStateDto: UpdateSeatStateDto,
+  ): Promise<SeatState> {
+    try {
+      const seatState = await this.findOneSeatState(id);
+      if (!seatState)
+        throw new HttpException(
+          'Seat State Not Found!',
+          HttpStatus.BAD_REQUEST,
+        );
+      const updatedSeat = await this.prisma.seatState.update({
+        where: { id },
+        data: updateSeatStateDto,
+      });
+      return updatedSeat;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   remove(id: number) {

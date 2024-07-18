@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Put,
 } from '@nestjs/common';
 import { SeatStateService } from './seat-state.service';
 import { CreateSeatStateDto } from './dto/create-seat-state.dto';
@@ -48,12 +49,16 @@ export class SeatStateController {
     return { message: 'Successfull!', res: seatState };
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Put(':id')
+  async updateSeatState(
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateSeatStateDto: UpdateSeatStateDto,
-  ) {
-    return this.seatStateService.update(+id, updateSeatStateDto);
+  ): Promise<{ message: string; res: any }> {
+    const seatStateUpdated = await this.seatStateService.updateSeatState(
+      +id,
+      updateSeatStateDto,
+    );
+    return { message: 'Updated successfully!', res: seatStateUpdated };
   }
 
   @Delete(':id')
