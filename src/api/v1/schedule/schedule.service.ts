@@ -1,31 +1,52 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Category_movie } from '@prisma/client';
+import { Schedule } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
-import { createCategoryDTO } from './dto/createCategory.dto';
-import { updateCategoryDTO } from './dto/updateCategory.dto';
-import { getCategoryMovieDTO } from './dto/getCategoryMovie.dto';
+import { CreateScheduleDTO } from './dto/createSchedule.dto';
+import { UpdateScheduleDTO } from './dto/updateSchedule.dto';
+import { GetScheduleDTO } from './dto/getSchedule.dto';
+
 
 @Injectable()
-export class CategoryMovieService {
+export class ScheduleService {
     constructor(private readonly prisma:PrismaService){}
-    //create category
-    async createCategoryMovie(data:createCategoryDTO):Promise<Category_movie>{
+
+    dateToSeconds(timeStart:Date,timeEnd:Date): number {
+        const start = Math.floor(timeStart.getTime() / 1000);
+        const end = Math.floor(timeEnd.getTime() / 1000);
+        if(start >= end)
+            throw new HttpException(`TimeStart is not allowed to be greater than or equal timeEnd `, HttpStatus.BAD_REQUEST)
+        return 1
+      }
+
+    //create Schedule
+    async createSchedule(data:CreateScheduleDTO):Promise<Schedule>{
         try {
-            const result = await this.prisma.category_movie.create({data:{...data}});
+            const {timeStart,timeEnd} = data;
+            this.dateToSeconds(timeStart,timeEnd)
+            const check = await this.prisma.movie.findUnique({
+                where:{
+                    id:data.movieId
+                }
+            })
+            if(!check)
+                throw new HttpException(`Movie id not found `, HttpStatus.BAD_REQUEST)
+            const result = await this.prisma.schedule.create({data:{...data}});
             return result;
         } catch (error) {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
         
     }
-    //get all category
-    async getAllCategoryMovie():Promise<getCategoryMovieDTO[]>{
+
+    //get all Schedule
+    async getAllSchedule():Promise<GetScheduleDTO[]>{
         try {
-            const result = await this.prisma.category_movie.findMany({
+            const result = await this.prisma.schedule.findMany({
                 select:{
                     id:true,
-                    name:true,
-                    desc:true,
+                    date:true,
+                    timeStart:true,
+                    timeEnd:true,
                     movie:{
                         select:{
                             id:true,
@@ -33,11 +54,12 @@ export class CategoryMovieService {
                             duration:true,
                             releaseDate:true,
                             desc:true,
+                            categoryId : true,
                             director: true,
                             actor: true,
                             language:true,
                             urlTrailer:true,
-                        },
+                        }
                     }
                 },
                 where:{
@@ -49,14 +71,16 @@ export class CategoryMovieService {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
     }
-    //get category id
-    async getCategoryMovieId(id:number):Promise<getCategoryMovieDTO>{
+
+    //get Schedule id
+    async getScheduleId(id:number):Promise<GetScheduleDTO>{
         try {
-            const result = await this.prisma.category_movie.findUnique({
+            const result = await this.prisma.schedule.findUnique({
                 select:{
                     id:true,
-                    name:true,
-                    desc:true,
+                    date:true,
+                    timeStart:true,
+                    timeEnd:true,
                     movie:{
                         select:{
                             id:true,
@@ -64,11 +88,12 @@ export class CategoryMovieService {
                             duration:true,
                             releaseDate:true,
                             desc:true,
+                            categoryId : true,
                             director: true,
                             actor: true,
                             language:true,
                             urlTrailer:true,
-                        },
+                        }
                     }
                 },
                 where:{
@@ -81,13 +106,14 @@ export class CategoryMovieService {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
     }
-    // update category 
-    async updateCategoryMovie(updateDate: updateCategoryDTO,id:number):Promise<Category_movie>{
+
+    // update Schedule 
+    async updateSchedule(updateDate: UpdateScheduleDTO,id:number):Promise<Schedule>{
         try {
-            const exited = await this.getCategoryById(id);
+            const exited = await this.getScheduleById(id);
             if(!exited)
                 throw new HttpException('id not found',HttpStatus.BAD_REQUEST)
-            const result = await this.prisma.category_movie.update({
+            const result = await this.prisma.schedule.update({
                 where:{
                     id:id,
                     deleteAt:false
@@ -101,13 +127,14 @@ export class CategoryMovieService {
             throw new HttpException(error,HttpStatus.BAD_REQUEST)
         }
     }
-    //delete category
-    async deleteCategoryMovie(id:number):Promise<void>{
+
+    //delete Schedule
+    async deleteSchedule(id:number):Promise<void>{
         try {
-            const exited = await this.getCategoryById(id);
+            const exited = await this.getScheduleById(id);
             if(!exited)
                 throw new HttpException('id not found',HttpStatus.BAD_REQUEST)
-            await this.prisma.category_movie.update({
+            await this.prisma.schedule.update({
                 where:{
                     id:id
                 },data:{
@@ -119,8 +146,9 @@ export class CategoryMovieService {
         }
         
     }
-    async getCategoryById(id:number): Promise< {id:number} >{
-        const userId = await this.prisma.category_movie.findUnique({
+
+    async getScheduleById(id:number): Promise< {id:number} >{
+        const userId = await this.prisma.schedule.findUnique({
             where:{
                 id:id,
                 deleteAt:false

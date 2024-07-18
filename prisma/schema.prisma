@@ -12,16 +12,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model Auth {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  password      String
-  fullname      String?
-  refreshToken  String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  bookings      Booking[]
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String
+  fullname     String?
+  refreshToken String?
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
 }
 
 enum Role {
@@ -30,56 +31,61 @@ enum Role {
 }
 
 model BackList {
-  id                  Int       @id @default(autoincrement())
-  oldAccessToken      String    @unique
-  expiresAt           DateTime
-  jti                 String?   @unique
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-}
-model Category_movie {
-  id                  Int       @id @default(autoincrement())
-  name                String
-  desc                String?
-  deleteAt            Boolean   @default(false)
-  movie               Movie[]
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id             Int      @id @default(autoincrement())
+  oldAccessToken String   @unique
+  expiresAt      DateTime
+  jti            String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
-model Movie{
-  id                  Int       @id @default(autoincrement())
-  name                String
-  desc                String?
-  duration            Int?
-  releaseDate         DateTime?
-  imageId             String?
-  category            Category_movie?  @relation(fields: [categoryId], references: [id])
-  categoryId          Int?
-  director            String?
-  actor               String?
-  language            String?
-  urlTrailer          String?
-  deleteAt            Boolean   @default(false)
-  schedule            Schedule[]
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+model Category_movie {
+  id        Int      @id @default(autoincrement())
+  name      String
+  desc      String?
+  deleteAt  Boolean  @default(false)
+  movie     Movie[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
+model Movie {
+  id          Int             @id @default(autoincrement())
+  name        String
+  desc        String?
+  duration    Int?
+  releaseDate DateTime?
+  imageId     String?
+  imagePath   String?
+  category    Category_movie? @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  director    String?
+  actor       String?
+  language    String?
+  urlTrailer  String?
+  deleteAt    Boolean         @default(false)
+  schedule    Schedule[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
 model Schedule {
-  id                  Int       @id @default(autoincrement())
-  date                DateTime
-  timeStart           DateTime
-  timeEnd             DateTime
-  movie               Movie?    @relation(fields: [movieId], references: [id])
-  movieId             Int?
-  room                Room?     @relation(fields: [roomId], references: [id])
-  roomId              Int?
-  deleteAt            Boolean   @default(false)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  bookings            Booking[]
+  id        Int       @id @default(autoincrement())
+  date      DateTime
+  timeStart DateTime
+  timeEnd   DateTime
+  movie     Movie?    @relation(fields: [movieId], references: [id])
+  movieId   Int?
+  room      Room?     @relation(fields: [roomId], references: [id])
+  roomId    Int?
+  deleteAt  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
 }
+
 model Room {
+<<<<<<< HEAD
   id                  Int       @id @default(autoincrement())
   roomName            String    @unique
   schedule            Schedule[]
@@ -87,42 +93,56 @@ model Room {
   seatStates          SeatState[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+=======
+  id         Int         @id @default(autoincrement())
+  roomName   String
+  schedule   Schedule[]
+  capacity   String
+  seatStates SeatState[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+>>>>>>> develop
 }
+
 model SeatState {
-  id                  Int       @id @default(autoincrement())
-  room                Room      @relation(fields: [roomId],references: [id])
-  roomId              Int 
-  seat                Seat      @relation(fields: [seatId],references: [id])
-  seatId              Int
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  booking Booking[]
+  id        Int       @id @default(autoincrement())
+  room      Room      @relation(fields: [roomId], references: [id])
+  roomId    Int
+  seat      Seat      @relation(fields: [seatId], references: [id])
+  seatId    Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  booking   Booking[]
 }
+
 model Seat {
-  id                  Int       @id @default(autoincrement())
-  name                String    @unique
-  seatType            SeatType  @relation(fields: [seatTypeId],references: [id])
-  seatTypeId          Int
-  seatStates          SeatState[]
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  seatType   SeatType    @relation(fields: [seatTypeId], references: [id])
+  seatTypeId Int
+  seatStates SeatState[]
 }
+
 model SeatType {
-  id                  Int       @id @default(autoincrement())
-  name                String    @unique
-  price               Int
-  seats               Seat[]
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  price Int
+  seats Seat[]
 }
+
 model Booking {
-  id                  Int       @id @default(autoincrement())
-  seatState           SeatState @relation(fields: [seatStateId],references: [id])
-  seatStateId         Int
-  account             Auth      @relation(fields: [account_id],references: [id])
-  account_id          Int
-  schedule            Schedule  @relation(fields: [schedule_id],references: [id])
-  schedule_id         Int
-  state               State
-  createdAt           DateTime  @default(now())
+  id          Int       @id @default(autoincrement())
+  seatState   SeatState @relation(fields: [seatStateId], references: [id])
+  seatStateId Int
+  account     Auth      @relation(fields: [account_id], references: [id])
+  account_id  Int
+  schedule    Schedule  @relation(fields: [schedule_id], references: [id])
+  schedule_id Int
+  state       State
+  createdAt   DateTime  @default(now())
 }
+
 enum State {
-    PENDING
-    SUCCESS
+  PENDING
+  SUCCESS
 }
