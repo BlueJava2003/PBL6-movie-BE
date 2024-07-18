@@ -103,6 +103,7 @@ model SeatState {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   booking   Booking[]
+  @@unique([roomId,seatId])
 }
 
 model Seat {
