@@ -11,6 +11,18 @@ export class SeatStateService {
     createSeatStateDto: CreateSeatStateDto,
   ): Promise<SeatState> {
     try {
+      const { roomId, seatId } = createSeatStateDto;
+      const isSeatExisted = await this.prisma.seatState.findUnique({
+        where: {
+          roomId_seatId: {
+            roomId,
+            seatId,
+          },
+        },
+      });
+      if (isSeatExisted) {
+        throw new HttpException('Seat State existed!', HttpStatus.BAD_REQUEST);
+      }
       const seatState = await this.prisma.seatState.create({
         data: createSeatStateDto,
       });
