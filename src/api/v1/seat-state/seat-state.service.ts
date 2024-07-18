@@ -29,8 +29,15 @@ export class SeatStateService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} seatState`;
+  async findOneSeatState(id: number): Promise<SeatState> {
+    try {
+      const seatState = await this.prisma.seatState.findUnique({
+        where: { id },
+      });
+      return seatState;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   update(id: number, updateSeatStateDto: UpdateSeatStateDto) {
