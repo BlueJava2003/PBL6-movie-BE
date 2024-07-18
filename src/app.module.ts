@@ -7,10 +7,10 @@ import { MailerModule } from './api/mailer/mailer.module';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
+import { RoomModule } from './api/v1/room/room.module';
 import { MovieModule } from './api/v1/movie/movie.module';
 import { ScheduleModule } from './api/v1/schedule/schedule.module';
 import { SeatModule } from './api/v1/seat/seat.module';
-
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { SeatModule } from './api/v1/seat/seat.module';
     MailerModule,
     AuthModule,
     CategoryMovieModule,
+    RoomModule,
     MovieModule,
     ScheduleModule,
     SeatTypeModule,
