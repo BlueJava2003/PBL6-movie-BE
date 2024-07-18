@@ -8,6 +8,7 @@ import { PrismaService } from './prisma.service';
 import { AuthModule } from './api/v1/auth/auth.module';
 import { CategoryMovieModule } from './api/v1/category-movie/category-movie.module';
 import { RoomModule } from './api/v1/room/room.module';
+import { SeatModule } from './api/v1/seat/seat.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RoomModule } from './api/v1/room/room.module';
     SeatTypeModule,
     CategoryMovieModule,
     RoomModule,
+    SeatModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
