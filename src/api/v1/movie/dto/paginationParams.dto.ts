@@ -11,7 +11,7 @@ export class PaginationParamsDto {
     default: '1',
   })
   @Min(0)
-  offset?: number;
+  page?: number;
  
   @IsOptional()
   @Transform(({ value }) => Number(value))

@@ -59,7 +59,6 @@ export class ScheduleService {
                             actor: true,
                             language:true,
                             urlTrailer:true,
-                            imagePath:true,
                         }
                     }
                 },
@@ -94,7 +93,6 @@ export class ScheduleService {
                             actor: true,
                             language:true,
                             urlTrailer:true,
-                            imagePath:true,
                         }
                     }
                 },

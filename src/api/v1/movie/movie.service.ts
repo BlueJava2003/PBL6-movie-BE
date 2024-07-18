@@ -38,8 +38,10 @@ export class MovieService {
     }
 
     //get all Movie
-    async getAllMovie(offset?: number, limit?: number):Promise<getMovieDTO[]>{
+    async getAllMovie(page?: number, limit?: number):Promise<getMovieDTO[]>{
         try {
+            const page_size = 10;
+            const pagination = (page-1) * page_size;
             const result = await this.prisma.movie.findMany({
                 select:{
                     id:true,
@@ -72,8 +74,8 @@ export class MovieService {
                 where:{
                     deleteAt:false
                 },
-                take: limit | 10,
-                skip: offset | 1,
+                take: limit,
+                skip: pagination ,
             });
             return result;
         } catch (error) {
@@ -127,7 +129,7 @@ export class MovieService {
     }
 
     //get all movie follow day
-    async getAllMovieFollowDay(date:Date):Promise<getMovieDTO[]>{
+    async getAllMovieFollowDay(date:Date,MovieId:number):Promise<getMovieDTO[]>{
         try {
             const startOfDay = new Date(date);
             startOfDay.setHours(0, 0, 0, 0);
@@ -135,19 +137,25 @@ export class MovieService {
             const endOfDay = new Date(date);
             endOfDay.setHours(23, 59, 59, 999);
 
-            const movies = await this.prisma.movie.findMany({
-                where: {
-                  schedule: {
-                    some: {
-                      date: {
-                        gte: startOfDay,
-                        lte: endOfDay,
-                      },
-                      deleteAt: false,
+            const whereCondition: any = {
+                schedule: {
+                  some: {
+                    date: {
+                      gte: startOfDay,
+                      lte: endOfDay,
                     },
+                    deleteAt: false,
                   },
-                  deleteAt: false,
                 },
+                deleteAt: false,
+              };
+          
+              if (MovieId !== undefined) {
+                whereCondition.id = MovieId;
+              }
+
+            const movies = await this.prisma.movie.findMany({
+                where: whereCondition,
                 include: {
                   schedule: {
                     where: {

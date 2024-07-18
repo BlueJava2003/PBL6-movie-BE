@@ -11,6 +11,7 @@ import { Role } from '@prisma/client'
 import { GetMovieFollowDay } from './dto/getMovieFollowDay.dto';
 import { SearchMovieDTO } from './dto/searchMovie.dto';
 import { PaginationParamsDto } from './dto/paginationParams.dto';
+import { TimezoneInterceptor } from 'src/api/interceptor/formatTimeZone.interceptor';
 
 @ApiBearerAuth()
 @ApiTags('movie')
@@ -23,7 +24,7 @@ export class MovieController {
     @Post('createMovie')
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        type:createMovieDTO
+      type:createMovieDTO
       })
     @UseInterceptors(FileInterceptor('file'))
     async createMovie(@UploadedFile() file: Express.Multer.File,@Body() body:createMovieDTO):Promise<{message:string,res:any}>{
@@ -33,9 +34,11 @@ export class MovieController {
     }
 
     //get all movie
+    
     @Get('getAllMovie')
-    async getAllMovie(@Query() { offset, limit }: PaginationParamsDto,):Promise<{message:string,res:any}>{
-        const result = await this.movieService.getAllMovie(offset, limit)
+    @UseInterceptors(TimezoneInterceptor)
+    async getAllMovie(@Query() { page, limit }: PaginationParamsDto,):Promise<{message:string,res:any}>{
+        const result = await this.movieService.getAllMovie(page, limit)
         return { message:'Get list movie successfully',res:result };
     }
 
@@ -49,8 +52,8 @@ export class MovieController {
     //get movie follow day
     @Post('getMovieFollowDay')
     async getMovieFollowDay(@Body() body:GetMovieFollowDay):Promise<{message:string,res:any}>{
-        const {date} = body;
-        const result = await this.movieService.getAllMovieFollowDay(date);
+        const {date,MovieId} = body;
+        const result = await this.movieService.getAllMovieFollowDay(date,MovieId);
         return { message:`Get list movie follow day successfully`,res:result };
     }
     //update movie
