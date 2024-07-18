@@ -3,6 +3,7 @@ import { CreateSeatStateDto } from './dto/create-seat-state.dto';
 import { UpdateSeatStateDto } from './dto/update-seat-state.dto';
 import { PrismaService } from 'src/prisma.service';
 import { SeatState } from '@prisma/client';
+import { CreateManySeatStatesDto } from './dto/create-many-seat-state';
 
 @Injectable()
 export class SeatStateService {
@@ -25,6 +26,24 @@ export class SeatStateService {
       }
       const seatState = await this.prisma.seatState.create({
         data: createSeatStateDto,
+      });
+      return seatState;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async createManySeatStates(
+    createManySeatStatesDto: CreateManySeatStatesDto,
+  ): Promise<SeatState[]> {
+    try {
+      const { roomId, seatIds } = createManySeatStatesDto;
+      const seatStatesObj = seatIds.map((seatId) => ({
+        roomId: roomId,
+        seatId: seatId,
+      }));
+      const seatState = await this.prisma.seatState.createManyAndReturn({
+        data: seatStatesObj,
       });
       return seatState;
     } catch (error) {

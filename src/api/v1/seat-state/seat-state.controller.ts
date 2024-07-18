@@ -18,6 +18,7 @@ import { AuthGuard } from '../auth/auth.gruad';
 import { RolesGuard } from '../auth/role.gruad';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
+import { CreateManySeatStatesDto } from './dto/create-many-seat-state';
 
 @ApiBearerAuth()
 @ApiTags('seat-state')
@@ -35,6 +36,16 @@ export class SeatStateController {
       await this.seatStateService.createSeatState(createSeatStateDto);
     return { message: 'Create successfully!', res: seatState };
   }
+  @Post('many')
+  async createManySeatStates(
+    @Body() createManySeatStatesDto: CreateManySeatStatesDto,
+  ): Promise<{ message: string; res: any }> {
+    const seatState = await this.seatStateService.createManySeatStates(
+      createManySeatStatesDto,
+    );
+    return { message: 'Create successfully!', res: seatState };
+  }
+
   @Get()
   async findAllSeatState(): Promise<{ message: string; res: any }> {
     const allSeatStates = await this.seatStateService.findAllSeatState();
