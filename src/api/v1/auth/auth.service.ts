@@ -51,7 +51,7 @@ export class AuthService {
                 }
             });
             if(exited)
-                throw new HttpException('Email exited. Please use another email',HttpStatus.CONFLICT);
+                throw new HttpException('Email already exits. Please use another email',HttpStatus.CONFLICT);
            
             
             const hashPassword = await this.hashPassword(registerDto.password);
