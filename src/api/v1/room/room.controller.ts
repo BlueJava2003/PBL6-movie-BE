@@ -8,15 +8,23 @@ import {
   Delete,
   ParseIntPipe,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 
+import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.gruad';
+import { Roles } from 'src/api/decorator/role.decorator';
+import { Role } from '@prisma/client';
+
 @Controller('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post()
   async createRoom(
     @Body() createRoomDto: CreateRoomDto,
@@ -25,12 +33,16 @@ export class RoomController {
     return { message: 'Create successfully!', res: room };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get()
   async findAll(): Promise<{ message: string; res: any }> {
     const allRooms = await this.roomService.findAllRooms();
     return { message: 'Successfull!', res: allRooms };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -39,6 +51,8 @@ export class RoomController {
     return { message: 'Successfull!', res: room };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -48,6 +62,8 @@ export class RoomController {
     return { message: 'Updated successfully!', res: updatedRoom };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
   async removeRoom(
     @Param('id', ParseIntPipe) id: number,
