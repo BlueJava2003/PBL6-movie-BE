@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsDate, IsNumber } from "class-validator";
+import { IsDate, IsNumber, IsOptional } from "class-validator";
 
 export class GetMovieFollowDay{
     @IsDate()
@@ -12,9 +12,10 @@ export class GetMovieFollowDay{
     date:Date
     @IsNumber()
     @Type(() => Number)
+    @IsOptional()
     @ApiProperty({
         description: 'fill to id movie',
         default: '1',
       })
-    MovieId:number
+    movieId:number
 }
