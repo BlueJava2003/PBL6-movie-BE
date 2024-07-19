@@ -19,10 +19,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: { id: number; email: string }) {
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(this.ctx.req);
-    
-    if (await this.authService.isTokenBlacklisted(token)) {
-      throw new UnauthorizedException('Token is blacklisted');
-    }
     const user = await this.prisma.auth.findUnique({
       where: { id: payload.id },
     });

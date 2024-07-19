@@ -51,8 +51,8 @@ export class MovieController {
     //get movie follow day
     @Post('getMovieFollowDay')
     async getMovieFollowDay(@Body() body:GetMovieFollowDay):Promise<{message:string,res:any}>{
-        const {date,MovieId} = body;
-        const result = await this.movieService.getAllMovieFollowDay(date,MovieId);
+        const {date,movieId} = body;
+        const result = await this.movieService.getAllMovieFollowDay(date,movieId);
         return { message:`Get list movie follow day successfully`,res:result };
     }
     //update movie

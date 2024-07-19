@@ -82,7 +82,8 @@ export class AuthService {
                     email:user.email
                 },
                 data:{
-                    refreshToken: token.refresh_token
+                    refreshToken: token.refresh_token,
+                    accessToken: token.accessToken
                 }
             });
             return token;
@@ -181,45 +182,23 @@ export class AuthService {
 
     }
 
-    //hanlde logout
-    async addToBlacklist(oldAccessToken: string) {
-        const decodedToken = this.jwtService.decode(oldAccessToken) as { exp: number, jti?: string };
-        const expiresAt = new Date(decodedToken.exp * 1000);
-    
-        await this.prisma.backList.create({
-          data: {
-            oldAccessToken,
-            expiresAt,
-            jti:decodedToken.jti
-            
-          },
-        });
-      }
-    async isTokenBlacklisted(oldAccessToken: string): Promise<boolean> {
-        const decodedToken = this.jwtService.decode(oldAccessToken) as { jti?: string };
-        
-        if (decodedToken.jti) {
-          // Nếu token có jti, kiểm tra bằng jti
-          const blacklistedToken = await this.prisma.backList.findUnique({
-            where: { jti: decodedToken.jti },
-          });
-          return !!blacklistedToken;
-        } else {
-          // Nếu không, kiểm tra bằng toàn bộ token
-          const blacklistedToken = await this.prisma.backList.findUnique({
-            where: { oldAccessToken },
-          });
-          return !!blacklistedToken;
-        }
-      }
     async logout (userId: number, accessToken: string):Promise<void>{
         try {
             await this.prisma.auth.update({
                 where: { id: userId },
                 data: { refreshToken: null },
               });
-          
-            // await this.addToBlacklist(accessToken)
+            
+            await this.prisma.backList.create({data:{oldAccessToken:accessToken}})
+            await this.prisma.auth.update({
+              where:{
+                id:userId
+              },
+              data:{
+                accessToken:null,
+                refreshToken:null
+              }
+            })
         } catch (error) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST)
         }

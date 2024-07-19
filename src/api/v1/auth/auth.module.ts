@@ -16,6 +16,7 @@ import { MailerService } from 'src/api/mailer/mailer.service';
       secret:process.env.JWT_SECRET_KEY,
       signOptions:{expiresIn:process.env.EXPIRES_ACCESS_TOKEN}
     })
+   
   ],
   providers: [AuthService,PrismaService,JwtStrategy,MailerService],
   controllers: [AuthController]
