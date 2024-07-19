@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsDate, IsNumber, IsString } from "class-validator"
+import { IsDate, IsNumber, IsOptional, IsString } from "class-validator"
 
 export class createMovieDTO{
     @ApiProperty({
@@ -69,4 +69,13 @@ export class createMovieDTO{
       })
     @IsString()
     urlTrailer:string
+
+    @ApiProperty({
+      description: 'fill to urlTRailer movie',
+      default: 'http://Horror Movies',
+      format: 'binary',
+      type:'string'
+    })
+    @IsOptional()
+    file:string
 }

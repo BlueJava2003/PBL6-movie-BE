@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { createMovieDTO } from './dto/createMovie.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,6 +9,9 @@ import { RolesGuard } from '../auth/role.gruad';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client'
 import { GetMovieFollowDay } from './dto/getMovieFollowDay.dto';
+import { SearchMovieDTO } from './dto/searchMovie.dto';
+import { PaginationParamsDto } from './dto/paginationParams.dto';
+
 
 @ApiBearerAuth()
 @ApiTags('movie')
@@ -21,24 +24,7 @@ export class MovieController {
     @Post('createMovie')
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        schema: {
-          type: 'object',
-          properties: {
-            name:{ type: 'string' },
-            duration:{ type: 'integer' },
-            releaseDate:{ type: 'date' },
-            desc:{ type: 'string' },
-            categoryId:{ type: 'integer' },
-            director:{ type: 'string' },
-            actor:{ type: 'string' },
-            language:{ type: 'string' },
-            urlTrailer:{ type: 'string' },
-            file: {
-              type: 'string',
-              format: 'binary',
-            },
-          },
-        },
+      type:createMovieDTO
       })
     @UseInterceptors(FileInterceptor('file'))
     async createMovie(@UploadedFile() file: Express.Multer.File,@Body() body:createMovieDTO):Promise<{message:string,res:any}>{
@@ -48,9 +34,10 @@ export class MovieController {
     }
 
     //get all movie
+    
     @Get('getAllMovie')
-    async getAllMovie():Promise<{message:string,res:any}>{
-        const result = await this.movieService.getAllMovie()
+    async getAllMovie(@Query() { page, limit }: PaginationParamsDto,):Promise<{message:string,res:any}>{
+        const result = await this.movieService.getAllMovie(page, limit)
         return { message:'Get list movie successfully',res:result };
     }
 
@@ -64,8 +51,8 @@ export class MovieController {
     //get movie follow day
     @Post('getMovieFollowDay')
     async getMovieFollowDay(@Body() body:GetMovieFollowDay):Promise<{message:string,res:any}>{
-        const {date} = body;
-        const result = await this.movieService.getAllMovieFollowDay(date);
+        const {date,MovieId} = body;
+        const result = await this.movieService.getAllMovieFollowDay(date,MovieId);
         return { message:`Get list movie follow day successfully`,res:result };
     }
     //update movie
@@ -73,24 +60,7 @@ export class MovieController {
     @Roles(Role.ADMIN)
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        schema: {
-          type: 'object',
-          properties: {
-            name:{ type: 'string' },
-            duration:{ type: 'integer' },
-            releaseDate:{ type: 'date' },
-            desc:{ type: 'string' },
-            categoryId:{ type: 'integer' },
-            director:{ type: 'string' },
-            actor:{ type: 'string' },
-            language:{ type: 'string' },
-            urlTrailer:{ type: 'string' },
-            file: {
-              type: 'string',
-              format: 'binary',
-            },
-          },
-        },
+      type:updateMovieDTO
       })
     @UseInterceptors(FileInterceptor('file'))
     @Put('upadteMovie/:id')
@@ -108,8 +78,16 @@ export class MovieController {
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     @Delete('deleteMovie/:id')
-    async deleteMovie(@Param('id',ParseIntPipe) id:number):Promise<{message:string}>{
+    async deleteMovie(@Param('id',ParseIntPipe) id:number):Promise< { message:string } >{
         await this.movieService.deleteMovie(id)
-        return {message:`Delete movie id ${id} successFully`}
+        return { message:`Delete movie id ${id} successFully` }
+    }
+
+    //search movie
+    @Post('searchMovie')
+    async searchMovie(@Body() body:SearchMovieDTO):Promise< { message:string,res:any } >{
+      const { name } = body
+      const result = await this.movieService.searchMovie(name);
+      return { message:'Search movie successfully',res:result }
     }
 }

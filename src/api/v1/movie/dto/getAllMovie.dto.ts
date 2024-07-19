@@ -7,4 +7,5 @@ export class getMovieDTO{
     actor: string
     language:string
     urlTrailer:string
+    imagePath:string
 }
