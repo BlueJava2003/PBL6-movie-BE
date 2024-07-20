@@ -55,7 +55,7 @@ export class RoomService {
 
   async removeRoom(id: number): Promise<void> {
     try {
-      await this.prisma.seatState.deleteMany({ where: { roomId: id } });
+      await this.prisma.roomState.deleteMany({ where: { roomId: id } });
       await this.prisma.room.delete({
         where: {
           id,
