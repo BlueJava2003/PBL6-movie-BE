@@ -81,7 +81,7 @@ model Schedule {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   bookings  Booking[]
-  roomStates RoomState[]
+  roomState RoomState?
 }
 
 model Room {
@@ -97,7 +97,7 @@ model Room {
 model RoomState {
   id Int  @id @default(autoincrement())
   schedule Schedule @relation(fields: [scheduleId],references: [id])
-  scheduleId Int
+  scheduleId Int @unique
   room Room @relation(fields: [roomId],references: [id])
   roomId Int 
   availableSeat Int[]

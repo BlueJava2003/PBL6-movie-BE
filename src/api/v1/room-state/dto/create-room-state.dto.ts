@@ -9,12 +9,12 @@ import {
 } from 'class-validator';
 
 export class CreateRoomStateDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Schudule ID', default: 1 })
   @IsInt()
   @IsNotEmpty()
   scheduleId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Room ID', default: 1 })
   @IsInt()
   @IsNotEmpty()
   roomId: number;
