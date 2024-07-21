@@ -121,10 +121,11 @@ model SeatType {
 
 model Booking {
   id          Int       @id @default(autoincrement())
-  account     Auth      @relation(fields: [account_id], references: [id])
-  account_id  Int
-  schedule    Schedule  @relation(fields: [schedule_id], references: [id])
-  schedule_id Int
+  account     Auth      @relation(fields: [accountId], references: [id])
+  accountId  Int
+  schedule    Schedule  @relation(fields: [scheduleId], references: [id])
+  scheduleId Int
+  seatsBooked Int[]
   state       State
   totalPrice  Int
   createdAt   DateTime  @default(now())
