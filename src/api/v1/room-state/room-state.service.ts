@@ -71,7 +71,7 @@ export class RoomStateService {
   //Find all room states exist
   async findAllRoomState(): Promise<RoomState[]> {
     try {
-      const allRoomStates = this.prisma.roomState.findMany();
+      const allRoomStates = await this.prisma.roomState.findMany();
       return allRoomStates;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
@@ -90,7 +90,10 @@ export class RoomStateService {
         },
       });
       if (!roomState)
-        throw new HttpException('Schedule Not Found!', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Room State Not Found!',
+          HttpStatus.BAD_REQUEST,
+        );
       const availableSeats = await this.prisma.seat.findMany({
         where: {
           id: {
@@ -141,8 +144,23 @@ export class RoomStateService {
       });
 
       if (!roomState) {
-        throw new HttpException('Room state not found', HttpStatus.BAD_GATEWAY);
+        throw new HttpException(
+          'Room state not found for this schedule!',
+          HttpStatus.BAD_GATEWAY,
+        );
       }
+      //Check if seats are in available array
+      const verifySeats = updateRoomStateDto.seatIds.every((id) =>
+        roomState.availableSeat.includes(id),
+      );
+      if (!verifySeats) {
+        throw new HttpException(
+          "At least one seat isn't available!",
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      //Filter out seats need to be reversed
       const updatedSeats = roomState.availableSeat.filter(
         (seatId) => !updateRoomStateDto.seatIds.includes(seatId),
       );
@@ -152,7 +170,7 @@ export class RoomStateService {
           availableSeat: updatedSeats,
         },
       });
-      await this.prisma.roomState.update({
+      const updatedRoomState = await this.prisma.roomState.update({
         where: { scheduleId: schduleId },
         data: {
           unavailableSeat: {
@@ -160,6 +178,7 @@ export class RoomStateService {
           },
         },
       });
+      return updatedRoomState;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
@@ -167,7 +186,7 @@ export class RoomStateService {
 
   async removeRoomState(scheduleId: number): Promise<void> {
     try {
-      const roomState = this.prisma.roomState.findUnique({
+      const roomState = await this.prisma.roomState.findUnique({
         where: {
           scheduleId,
         },

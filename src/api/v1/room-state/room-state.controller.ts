@@ -21,13 +21,14 @@ export class RoomStateController {
   async create(
     @Body() createRoomStateDto: CreateRoomStateDto,
   ): Promise<{ message: string; res: any }> {
-    const roomState = this.roomStateService.createRoomState(createRoomStateDto);
+    const roomState =
+      await this.roomStateService.createRoomState(createRoomStateDto);
     return { message: 'Create successfully!', res: roomState };
   }
 
   @Get()
   async findAll(): Promise<{ message: string; res: any }> {
-    const allRoomStates = this.roomStateService.findAllRoomState();
+    const allRoomStates = await this.roomStateService.findAllRoomState();
     return { message: 'Create successfully!', res: allRoomStates };
   }
 
@@ -52,8 +53,10 @@ export class RoomStateController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) scheduleId: number) {
-    this.roomStateService.removeRoomState(scheduleId);
+  async remove(
+    @Param('id', ParseIntPipe) scheduleId: number,
+  ): Promise<{ message: string }> {
+    await this.roomStateService.removeRoomState(scheduleId);
     return { message: 'Delete succesfully!' };
   }
 }
