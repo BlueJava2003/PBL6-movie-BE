@@ -135,8 +135,11 @@ export class RoomStateService {
     }
   }
 
-  //Delete a room state
-  async update(schduleId: number, updateRoomStateDto: UpdateRoomStateDto) {
+  //Update a room state
+  async updateRoomState(
+    schduleId: number,
+    updateRoomStateDto: UpdateRoomStateDto,
+  ) {
     try {
       const roomState = await this.prisma.roomState.findUnique({
         where: { scheduleId: schduleId },
