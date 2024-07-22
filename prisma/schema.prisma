@@ -122,13 +122,14 @@ model SeatType {
 model Booking {
   id          Int       @id @default(autoincrement())
   account     Auth      @relation(fields: [accountId], references: [id])
-  accountId  Int
+  accountId   Int
   schedule    Schedule  @relation(fields: [scheduleId], references: [id])
-  scheduleId Int
+  scheduleId  Int
   seatsBooked Int[]
   state       State
   totalPrice  Int
   createdAt   DateTime  @default(now())
+  isDeleted   Boolean   @default(false)
 }
 
 enum State {
