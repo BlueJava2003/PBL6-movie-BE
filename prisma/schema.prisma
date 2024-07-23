@@ -95,13 +95,13 @@ model Room {
 }
 
 model RoomState {
-  id Int  @id @default(autoincrement())
-  schedule Schedule @relation(fields: [scheduleId],references: [id])
-  scheduleId Int @unique
-  room Room @relation(fields: [roomId],references: [id])
-  roomId Int 
-  availableSeat Int[]
-  unavailableSeat Int[]
+  id                  Int  @id @default(autoincrement())
+  schedule            Schedule @relation(fields: [scheduleId],references: [id])
+  scheduleId          Int @unique
+  room                Room @relation(fields: [roomId],references: [id])
+  roomId              Int 
+  availableSeat       Int[]
+  unavailableSeat     Int[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
