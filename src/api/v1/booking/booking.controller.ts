@@ -94,19 +94,24 @@ export class BookingController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
-  async update(
+  async updateBooking(
     @Param('id', ParseIntPipe) bookingId: number,
     @Body() updateBookingDto: UpdateBookingDto,
   ): Promise<{ message: string; res: any }> {
-    const updatedBooking = await this.bookingService.update(
+    const updatedBooking = await this.bookingService.updateBooking(
       bookingId,
       updateBookingDto,
     );
     return { message: 'Successfull!', res: updatedBooking };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bookingService.remove(+id);
+  async deleteBooking(
+    @Param('id', ParseIntPipe) bookingId: number,
+  ): Promise<{ message: string }> {
+    await this.bookingService.remove(bookingId);
+    return { message: 'Successfull!' };
   }
 }

@@ -90,12 +90,16 @@ export class BookingService {
   ): Promise<Booking> {
     try {
       const { bookingId, paymentToken } = paymentDto;
+      const fifteenMinuteAgo = new Date(Date.now() - 150000);
       const hasBookingExisted = await this.prisma.booking.findUnique({
         where: {
           id: bookingId,
           accountId,
           state: State.PENDING,
           isDeleted: false,
+          createdAt: {
+            gt: fifteenMinuteAgo,
+          },
         },
       });
       if (!hasBookingExisted) {
@@ -147,45 +151,61 @@ export class BookingService {
       };
     }
   }
+
   async findAll(): Promise<Booking[]> {
-    const allBooking = await this.prisma.booking.findMany();
-    return allBooking;
+    try {
+      const allBooking = await this.prisma.booking.findMany({
+        where: {
+          isDeleted: false,
+        },
+      });
+      return allBooking;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
 
   //Find all booking history of user
   async findAllUserBookingHistory(accountId: number) {
-    const booking = await this.prisma.booking.findMany({
-      where: {
-        accountId,
-        state: State.SUCCESS,
-      },
-      include: {
-        schedule: {
-          select: {
-            timeStart: true,
-            timeEnd: true,
-            date: true,
-            roomState: {
-              select: {
-                room: {
-                  select: {
-                    id: true,
-                    roomName: true,
+    try {
+      const booking = await this.prisma.booking.findMany({
+        where: {
+          accountId,
+          state: State.SUCCESS,
+        },
+        omit: {
+          isDeleted: true,
+        },
+        include: {
+          schedule: {
+            select: {
+              timeStart: true,
+              timeEnd: true,
+              date: true,
+              roomState: {
+                select: {
+                  room: {
+                    select: {
+                      id: true,
+                      roomName: true,
+                    },
                   },
                 },
               },
-            },
-            movie: {
-              select: {
-                id: true,
-                name: true,
+              movie: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
           },
         },
-      },
-    });
-    return booking;
+      });
+      return booking;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
   }
   //Find booking history of user
   async findUserBookingHistory(
@@ -199,6 +219,9 @@ export class BookingService {
           accountId,
           state: State.SUCCESS,
           isDeleted: false,
+        },
+        omit: {
+          isDeleted: true,
         },
         include: {
           schedule: {
@@ -262,7 +285,8 @@ export class BookingService {
     }
   }
 
-  async update(
+  //Just for changing seat position with SUCCESS bookings (ADMIN)
+  async updateBooking(
     bookingId: number,
     updateBookingDto: UpdateBookingDto,
   ): Promise<Booking> {
@@ -270,23 +294,50 @@ export class BookingService {
       const booking = await this.prisma.booking.findUnique({
         where: {
           id: bookingId,
-          isDeleted: false,
         },
       });
-      if (!booking)
-        throw new HttpException('No booking found!', HttpStatus.BAD_REQUEST);
-      const seatsUpdate = updateBookingDto.seatIds;
 
+      if (!booking || booking.isDeleted || booking.state !== State.SUCCESS) {
+        throw new HttpException('No booking found!', HttpStatus.BAD_REQUEST);
+      }
+
+      const seatsUpdate = [...new Set(updateBookingDto.seatIds)];
+
+      const roomState = await this.prisma.roomState.findFirst({
+        where: { scheduleId: booking.scheduleId },
+      });
+
+      if (!roomState) {
+        throw new HttpException(
+          'Room state not found!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Update unavailable seats
+      const newUnavailableSeats = roomState.unavailableSeat.filter(
+        (id) => !seatsUpdate.includes(id),
+      );
+
+      //Remove booked seat in room state (reset back to the point before booking these )
+      await this.prisma.roomState.update({
+        where: { scheduleId: booking.scheduleId },
+        data: {
+          unavailableSeat: { set: newUnavailableSeats },
+          availableSeat: { push: booking.seatsBooked },
+        },
+      });
+
+      // Try to update room state if seats are booked or not
       const updateRoomStateDto: UpdateRoomStateDto = {
-        seatIds: updateBookingDto.seatIds,
+        seatIds: seatsUpdate,
       };
-      //Try to update room state if seats are booked or not
       await this.roomStateService.updateRoomState(
         booking.scheduleId,
         updateRoomStateDto,
       );
-      //Recalculate total price of all seats
-      let totalPrice = 0;
+
+      // Recalculate total price of all seats
       const seats = await this.prisma.seat.findMany({
         where: {
           id: {
@@ -297,22 +348,28 @@ export class BookingService {
           seatType: true,
         },
       });
-      seats.forEach((seat) => {
-        totalPrice += seat.seatType.price;
-      });
+
+      const totalPrice = seats.reduce((total, seat) => {
+        return total + seat.seatType.price;
+      }, 0);
 
       const updatedBooking = await this.prisma.booking.update({
         where: {
           id: bookingId,
         },
-        data: { ...updateBookingDto, totalPrice },
+        data: {
+          seatsBooked: seatsUpdate,
+          totalPrice,
+        },
       });
+
       return updatedBooking;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message || error, HttpStatus.BAD_REQUEST);
     }
   }
 
+  //Soft delete a booking
   async remove(bookingId: number): Promise<void> {
     try {
       const booking = this.prisma.booking.findUnique({
