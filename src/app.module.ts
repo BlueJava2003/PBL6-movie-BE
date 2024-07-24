@@ -12,6 +12,7 @@ import { MovieModule } from './api/v1/movie/movie.module';
 import { ScheduleModule } from './api/v1/schedule/schedule.module';
 import { SeatModule } from './api/v1/seat/seat.module';
 import { RoomStateModule } from './api/v1/room-state/room-state.module';
+import { BookingModule } from './api/v1/booking/booking.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { RoomStateModule } from './api/v1/room-state/room-state.module';
     SeatTypeModule,
     SeatModule,
     RoomStateModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
