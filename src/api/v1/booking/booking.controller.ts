@@ -11,6 +11,7 @@ import {
   HttpCode,
   ParseIntPipe,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -42,32 +43,48 @@ export class BookingController {
     return { message: 'Create successfully!', res: booking };
   }
 
-  @UseGuards(AuthGuard)
-  @Post('/payment')
-  @HttpCode(200)
-  async processPayment(
-    @Req() req,
-    @Body() paymentDto: PaymentBookingDto,
-  ): Promise<{ message: string; res: any }> {
-    const booking = await this.bookingService.processPayment(
-      req.payload.id,
-      paymentDto,
-    );
-    return { message: 'Payment success!', res: booking };
-  }
-
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
   @Get()
   async findAllBooking(): Promise<{ message: string; res: any }> {
-    const allBookings = await this.bookingService.findAll();
+    const allBookings = await this.bookingService.findAllHistory();
     return { message: 'Successfull!', res: allBookings };
   }
 
+  //Find all bookings of a user (for ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(200)
+  @Get('/admin')
+  async findAllUserBooking(
+    @Query('accountId', ParseIntPipe) accountId,
+  ): Promise<{ message: string; res: any }> {
+    const allBookings =
+      await this.bookingService.findAllUserBookingHistory(accountId);
+    return { message: 'Successfull!', res: allBookings };
+  }
+
+  //Find detail booking of a user (for ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(200)
+  @Get('/admin')
+  async findUserBooking(
+    @Query('accountId', ParseIntPipe) accountId,
+    @Query('bookingId', ParseIntPipe) bookingId,
+  ): Promise<{ message: string; res: any }> {
+    const booking = await this.bookingService.findUserBookingHistory(
+      accountId,
+      bookingId,
+    );
+    return { message: 'Successfull!', res: booking };
+  }
+
+  //Find all booking (for USER)
   @UseGuards(AuthGuard)
   @HttpCode(200)
-  @Get('user')
+  @Get('all')
   async findAllUserBookingHistory(
     @Req() req,
   ): Promise<{ message: string; res: any }> {
@@ -77,6 +94,7 @@ export class BookingController {
     return { message: 'Successfull!', res: allBookings };
   }
 
+  //Find detail history (for USER)
   @UseGuards(AuthGuard)
   @HttpCode(200)
   @Get(':id')

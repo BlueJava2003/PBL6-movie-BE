@@ -37,22 +37,25 @@ export class BookingService {
       const roomState = await this.roomStateService.findRoomState(scheduleId);
 
       // Extract the available seat IDs
-      const availableSeatIds = roomState.availableSeats.map(
+      const unavailableSeatIds = roomState.unavailableSeats.map(
         (seat) => seat.seatId,
       );
 
-      // Check if all seat IDs are available
-      const isSeatAvailable = seatIds.every((id) =>
-        availableSeatIds.includes(id),
+      // Filter out the seat Ids are unavailable
+      const seatsBook = [...new Set(seatIds)]; // This is for removing dupication
+      const unavailableSeats = seatsBook.filter((id) =>
+        unavailableSeatIds.includes(id),
       );
-
-      if (!isSeatAvailable) {
+      if (unavailableSeats.length !== 0) {
         throw new HttpException(
-          'One or more seats are not available',
+          `Seats with these IDs are not available: [${unavailableSeats.join(',')}]`,
           HttpStatus.BAD_REQUEST,
         );
       }
-
+      //Update room state
+      await this.roomStateService.updateRoomState(scheduleId, {
+        seatIds: seatsBook,
+      });
       //Calculate total price of all seats
       let totalPrice = 0;
       const seats = await this.prisma.seat.findMany({
@@ -69,7 +72,7 @@ export class BookingService {
         totalPrice += seat.seatType.price;
       });
 
-      const booking = this.prisma.booking.create({
+      const booking = await this.prisma.booking.create({
         data: {
           scheduleId,
           accountId,
@@ -78,66 +81,32 @@ export class BookingService {
           state: State.PENDING,
         },
       });
-      return booking;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
 
-  async processPayment(
-    accountId: number,
-    paymentDto: PaymentBookingDto,
-  ): Promise<Booking> {
-    try {
-      const { bookingId, paymentToken } = paymentDto;
-      const fifteenMinuteAgo = new Date(Date.now() - 150000);
-      const hasBookingExisted = await this.prisma.booking.findUnique({
-        where: {
-          id: bookingId,
-          accountId,
-          state: State.PENDING,
-          isDeleted: false,
-          createdAt: {
-            gt: fifteenMinuteAgo,
-          },
-        },
-      });
-      if (!hasBookingExisted) {
-        throw new HttpException('No payment found!', HttpStatus.BAD_REQUEST);
-      }
-      const verifyPayment = await this.verifyToken(paymentToken);
-      if (verifyPayment.status === 'failure') {
-        await this.prisma.booking.delete({ where: { id: bookingId } });
+      const payment = await this.verifyPayment();
+      if (payment.status === 'failure') {
+        this.prisma.booking.delete({ where: { id: booking.id } });
         throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
       }
-      const updateRoomStateDto: UpdateRoomStateDto = {
-        seatIds: hasBookingExisted.seatsBooked,
-      };
-      await this.roomStateService.updateRoomState(
-        hasBookingExisted.scheduleId,
-        updateRoomStateDto,
-      );
-      const successBooking = await this.prisma.booking.update({
-        where: {
-          id: bookingId,
-        },
+
+      const updatedBooking = await this.prisma.booking.create({
         data: {
+          scheduleId,
+          accountId,
+          seatsBooked: seatIds,
+          totalPrice,
           state: State.SUCCESS,
         },
       });
-      return successBooking;
+      return updatedBooking;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
-
-  async verifyToken(
-    paymentToken: string,
-  ): Promise<{ status: string; message: string }> {
+  async verifyPayment(): Promise<{ status: string; message: string }> {
     // Wait 2s
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const isSuccess = Math.random() > 0.2; // 80% success
+    const isSuccess = Math.random() > 0.5; // 50% success
 
     if (isSuccess) {
       return {
@@ -152,26 +121,52 @@ export class BookingService {
     }
   }
 
-  async findAll(): Promise<Booking[]> {
-    try {
-      const allBooking = await this.prisma.booking.findMany({
-        where: {
-          isDeleted: false,
+  async findAllHistory(): Promise<{}> {
+    const booking = await this.prisma.booking.findMany({
+      where: {
+        state: State.SUCCESS,
+        isDeleted: false,
+      },
+      omit: {
+        isDeleted: true,
+      },
+      include: {
+        schedule: {
+          select: {
+            date: true,
+            roomState: {
+              select: {
+                room: {
+                  select: {
+                    id: true,
+                    roomName: true,
+                  },
+                },
+              },
+            },
+            movie: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
-      });
-      return allBooking;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return booking;
   }
 
   //Find all booking history of user
-  async findAllUserBookingHistory(accountId: number) {
+  async findAllUserBookingHistory(accountId: number): Promise<{}> {
     try {
       const booking = await this.prisma.booking.findMany({
         where: {
           accountId,
-          state: State.SUCCESS,
+          isDeleted: false,
         },
         omit: {
           isDeleted: true,
@@ -201,6 +196,9 @@ export class BookingService {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
       return booking;
     } catch (error) {
@@ -217,7 +215,6 @@ export class BookingService {
         where: {
           id: bookingId,
           accountId,
-          state: State.SUCCESS,
           isDeleted: false,
         },
         omit: {
@@ -261,6 +258,7 @@ export class BookingService {
           },
         },
         select: {
+          id: true,
           name: true,
           seatType: true,
         },
