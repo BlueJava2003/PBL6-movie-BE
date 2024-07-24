@@ -5,6 +5,7 @@ import { UpdateRoomStateDto } from './dto/update-room-state.dto';
 import { PrismaService } from 'src/prisma.service';
 import { RoomState } from '@prisma/client';
 import { RoomStateResponseDto } from './dto/room-state-response.dto';
+import { compareFn } from 'src/api/util/sortSeats';
 
 @Injectable()
 export class RoomStateService {
@@ -79,10 +80,7 @@ export class RoomStateService {
   }
 
   //Find a room states by Schedule ID (for user mostly)
-  async findRoomState(scheduledId: number): Promise<{
-    availableSeats: RoomStateResponseDto[];
-    unavailableSeats: RoomStateResponseDto[];
-  }> {
+  async findRoomState(scheduledId: number): Promise<{}> {
     try {
       const roomState = await this.prisma.roomState.findFirst({
         where: {
@@ -129,7 +127,9 @@ export class RoomStateService {
         price: seat.seatType.price,
         isReserved: true,
       }));
-      return { availableSeats: availArray, unavailableSeats: unavailArray };
+      const seats = [...availArray, ...unavailArray];
+      seats.sort(compareFn);
+      return { seats: seats };
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
@@ -163,19 +163,14 @@ export class RoomStateService {
         );
       }
 
-      //Filter out seats need to be reversed
+      //Filter out seats need to be reserved
       const updatedSeats = roomState.availableSeat.filter(
         (seatId) => !updateRoomStateDto.seatIds.includes(seatId),
       );
-      await this.prisma.roomState.update({
-        where: { scheduleId: schduleId },
-        data: {
-          availableSeat: updatedSeats,
-        },
-      });
       const updatedRoomState = await this.prisma.roomState.update({
         where: { scheduleId: schduleId },
         data: {
+          availableSeat: updatedSeats,
           unavailableSeat: {
             push: updateRoomStateDto.seatIds,
           },
