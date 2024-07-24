@@ -36,8 +36,8 @@ export class MovieController {
     //get all movie
     
     @Get('getAllMovie')
-    async getAllMovie(@Query() { page, limit }: PaginationParamsDto,):Promise<{message:string,res:any}>{
-        const result = await this.movieService.getAllMovie(page, limit)
+    async getAllMovie(@Query() { page, limit, orderBy }: PaginationParamsDto,):Promise<{message:string,res:any}>{
+        const result = await this.movieService.getAllMovie(page, limit, orderBy)
         return { message:'Get list movie successfully',res:result };
     }
 

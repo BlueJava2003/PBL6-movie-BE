@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsDate, IsNumber, IsOptional, IsString } from "class-validator"
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
 
 export class createMovieDTO{
+    @IsNotEmpty()
     @ApiProperty({
         description: 'fill to name movie',
         default: 'Horror Movies',
@@ -11,6 +12,7 @@ export class createMovieDTO{
     name:string
 
     @IsNumber()
+    @IsNotEmpty()
     @Type(() => Number)
     @ApiProperty({
         description: 'fill to duration movie',
@@ -19,6 +21,7 @@ export class createMovieDTO{
     duration:number
 
     @IsDate()
+    @IsNotEmpty()
     @Type(() => Date)
     @ApiProperty({
         description: 'fill to releaseDate movie',
@@ -30,12 +33,13 @@ export class createMovieDTO{
         description: 'fill to name movie',
         default: 'Horror Movies',
       })
+      @IsNotEmpty()
     @IsString()
-     
     desc:string
 
     @IsNumber()
     @Type(() => Number)
+    @IsNotEmpty()
     @ApiProperty({
         description: 'fill to categoryId movie',
         default: '1',
@@ -46,6 +50,7 @@ export class createMovieDTO{
         description: 'fill to director movie',
         default: 'Sea',
       })
+    @IsNotEmpty()
     @IsString()
     director: string
 
@@ -53,6 +58,7 @@ export class createMovieDTO{
         description: 'fill to actor movie',
         default: 'Sea pro',
       })
+    @IsNotEmpty()
     @IsString()
     actor: string
 
@@ -61,12 +67,14 @@ export class createMovieDTO{
         default: 'VN',
       })
     @IsString()  
+    @IsNotEmpty()
     language:string
 
     @ApiProperty({
         description: 'fill to urlTRailer movie',
         default: 'http://Horror Movies',
       })
+    @IsNotEmpty()
     @IsString()
     urlTrailer:string
 
@@ -76,6 +84,7 @@ export class createMovieDTO{
       format: 'binary',
       type:'string'
     })
+    @IsNotEmpty()
     @IsOptional()
     file:string
 }

@@ -77,4 +77,13 @@ export class updateMovieDTO{
     @IsString()
     @IsOptional()
     urlTrailer:string
+
+    @ApiProperty({
+      description: 'fill to urlTRailer movie',
+      default: 'http://Horror Movies',
+      format: 'binary',
+      type:'string'
+    })
+    @IsOptional()
+    file:string
 }

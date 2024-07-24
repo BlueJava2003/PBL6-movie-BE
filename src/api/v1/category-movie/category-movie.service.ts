@@ -11,6 +11,13 @@ export class CategoryMovieService {
     //create category
     async createCategoryMovie(data:createCategoryDTO):Promise<Category_movie>{
         try {
+            const check = await this.prisma.category_movie.findFirst({
+                where:{
+                    name:data.name
+                }
+            })
+            if(check)
+                throw new HttpException('Name already exist!',HttpStatus.BAD_REQUEST)
             const result = await this.prisma.category_movie.create({data:{...data}});
             return result;
         } catch (error) {

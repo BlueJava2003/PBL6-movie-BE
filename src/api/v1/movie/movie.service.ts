@@ -9,12 +9,14 @@ import {
   formatToVietnamDay,
   formatToVietnamTime,
 } from 'src/api/utils/formatDate';
+import { PaginationService } from 'src/api/util/paginination';
 
 @Injectable()
 export class MovieService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly pagination :PaginationService,
   ) {}
 
   //create Movie
@@ -52,56 +54,60 @@ export class MovieService {
   }
 
   //get all Movie
-  async getAllMovie(page?: number, limit?: number): Promise<getMovieDTO[]> {
+  async getAllMovie(page?: number, limit?: number|10,orderBy?:string): Promise<any> {
     try {
-      const page_size = 10;
-      const pagination = ((page || 1) - 1) * page_size;
-      const result = await this.prisma.movie.findMany({
-        select: {
-          id: true,
-          name: true,
-          duration: true,
-          releaseDate: true,
-          desc: true,
-          director: true,
-          actor: true,
-          language: true,
-          urlTrailer: true,
-          imagePath: true,
-          category: {
-            select: {
-              id: true,
-              name: true,
-              desc: true,
-            },
+      const where = {
+        deleteAt: false,
+      }
+      const select = {
+        id: true,
+        name: true,
+        duration: true,
+        releaseDate: true,
+        desc: true,
+        director: true,
+        actor: true,
+        language: true,
+        urlTrailer: true,
+        imagePath: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            desc: true,
           },
-          schedule: {
-            select: {
-              id: true,
-              date: true,
-              timeStart: true,
-              timeEnd: true,
-              roomId: true,
+        },
+        schedule: {
+          select: {
+            id: true,
+            date: true,
+            timeStart: true,
+            timeEnd: true,
+            room: {
+              select: {
+                id: true,
+                roomName: true
+              },
             },
           },
         },
-        where: {
-          deleteAt: false,
-        },
-        take: limit || undefined,
-        skip: pagination,
-      });
-
-      const newResult = result.map((movie) => ({
+      }
+      const sortName = {
+        name: orderBy,
+      }
+      const result = await this.pagination.paginate<Movie>("movie",{page,limit},where,select,sortName);
+      
+      const resultArray = Object.values(result);
+      const test = resultArray.flat().map(movie => ({
         ...movie,
-        schedule: movie.schedule.map((sch) => ({
+        schedule: movie.schedule?.map((sch) => ({
           ...sch,
-          date: formatToVietnamDay(sch.date),
-          timeStart: formatToVietnamTime(sch.timeStart),
-          timeEnd: formatToVietnamTime(sch.timeEnd),
-        })),
+          date: formatToVietnamDay(sch.date), 
+          timeStart: formatToVietnamTime(sch.timeStart), 
+          timeEnd: formatToVietnamTime(sch.timeEnd), 
+        }))
       }));
-      return newResult;
+      return test;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
@@ -135,7 +141,12 @@ export class MovieService {
               date: true,
               timeStart: true,
               timeEnd: true,
-              roomId: true,
+              room: {
+                select: {
+                  id: true,
+                  roomName: true
+                },
+              },
             },
           },
         },
@@ -208,7 +219,12 @@ export class MovieService {
               date: true,
               timeStart: true,
               timeEnd: true,
-              roomId: true,
+              room: {
+                select: {
+                  id: true,
+                  roomName: true
+                },
+              },
             },
           },
           category: true,

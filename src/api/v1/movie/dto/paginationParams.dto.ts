@@ -1,4 +1,4 @@
-import { IsNumber, Min, IsOptional } from 'class-validator';
+import { IsNumber, Min, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
  
@@ -18,8 +18,16 @@ export class PaginationParamsDto {
   @IsNumber()
   @ApiProperty({
     description: 'fill to limit movie',
-    default: '2',
+    default: '10',
   })
   @Min(1)
   limit?: number;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    description: 'fill to limit movie',
+    default: 'desc',
+  })
+  orderBy?: string;
 }

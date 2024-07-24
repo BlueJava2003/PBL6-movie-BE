@@ -11,6 +11,7 @@ CREATE TABLE "Auth" (
     "password" TEXT NOT NULL,
     "fullname" TEXT,
     "refreshToken" TEXT,
+    "accessToken" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -33,6 +34,7 @@ CREATE TABLE "Category_movie" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "desc" TEXT,
+    "deleteAt" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -47,11 +49,13 @@ CREATE TABLE "Movie" (
     "duration" INTEGER,
     "releaseDate" TIMESTAMP(3),
     "imageId" TEXT,
+    "imagePath" TEXT,
     "categoryId" INTEGER,
     "director" TEXT,
     "actor" TEXT,
     "language" TEXT,
     "urlTrailer" TEXT,
+    "deleteAt" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -66,6 +70,7 @@ CREATE TABLE "Schedule" (
     "timeEnd" TIMESTAMP(3) NOT NULL,
     "movieId" INTEGER,
     "roomId" INTEGER,
+    "deleteAt" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -129,6 +134,12 @@ CREATE UNIQUE INDEX "Auth_email_key" ON "Auth"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BackList_oldAccessToken_key" ON "BackList"("oldAccessToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Room_roomName_key" ON "Room"("roomName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SeatState_roomId_seatId_key" ON "SeatState"("roomId", "seatId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Seat_name_key" ON "Seat"("name");
