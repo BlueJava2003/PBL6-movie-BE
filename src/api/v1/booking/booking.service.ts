@@ -34,12 +34,13 @@ export class BookingService {
         throw new HttpException('Schedule not found!', HttpStatus.BAD_REQUEST);
       }
 
-      const roomState = await this.roomStateService.findRoomState(scheduleId);
+      const roomState = await this.prisma.roomState.findUnique({
+        where: {
+          scheduleId,
+        },
+      });
 
-      // Extract the available seat IDs
-      const unavailableSeatIds = roomState.unavailableSeats.map(
-        (seat) => seat.seatId,
-      );
+      const unavailableSeatIds = roomState.unavailableSeat;
 
       // Filter out the seat Ids are unavailable
       const seatsBook = [...new Set(seatIds)]; // This is for removing dupication
@@ -52,10 +53,12 @@ export class BookingService {
           HttpStatus.BAD_REQUEST,
         );
       }
+
       //Update room state
       await this.roomStateService.updateRoomState(scheduleId, {
         seatIds: seatsBook,
       });
+
       //Calculate total price of all seats
       let totalPrice = 0;
       const seats = await this.prisma.seat.findMany({
@@ -76,24 +79,47 @@ export class BookingService {
         data: {
           scheduleId,
           accountId,
-          seatsBooked: seatIds,
+          seatsBooked: seatsBook,
           totalPrice,
           state: State.PENDING,
         },
       });
 
-      const payment = await this.verifyPayment();
+      const payment = await this.verifyPayment(); // Wait 2s
+
       if (payment.status === 'failure') {
-        this.prisma.booking.delete({ where: { id: booking.id } });
+        //Delete the PENDING record
+        await this.prisma.booking.delete({ where: { id: booking.id } });
+
+        const roomState = await this.prisma.roomState.findFirst({
+          where: {
+            scheduleId: scheduleId,
+          },
+        });
+        const newUnavailableSeats = roomState.unavailableSeat.filter(
+          (id) => !seatIds.includes(id),
+        );
+
+        // Reset state of seats (to available)
+        await this.prisma.roomState.update({
+          where: {
+            scheduleId,
+          },
+          data: {
+            availableSeat: {
+              push: booking.seatsBooked,
+            },
+            unavailableSeat: newUnavailableSeats,
+          },
+        });
+
         throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
       }
 
-      const updatedBooking = await this.prisma.booking.create({
+      //If success, update booking with SUCCESS state
+      const updatedBooking = await this.prisma.booking.update({
+        where: { id: booking.id },
         data: {
-          scheduleId,
-          accountId,
-          seatsBooked: seatIds,
-          totalPrice,
           state: State.SUCCESS,
         },
       });
@@ -106,7 +132,7 @@ export class BookingService {
     // Wait 2s
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const isSuccess = Math.random() > 0.5; // 50% success
+    const isSuccess = Math.random() > 0.3; // 70% success
 
     if (isSuccess) {
       return {
