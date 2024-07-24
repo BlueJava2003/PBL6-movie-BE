@@ -11,7 +11,7 @@ import { RoomModule } from './api/v1/room/room.module';
 import { MovieModule } from './api/v1/movie/movie.module';
 import { ScheduleModule } from './api/v1/schedule/schedule.module';
 import { SeatModule } from './api/v1/seat/seat.module';
-import { SeatStateModule } from './api/v1/seat-state/seat-state.module';
+import { RoomStateModule } from './api/v1/room-state/room-state.module';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { SeatStateModule } from './api/v1/seat-state/seat-state.module';
     ScheduleModule,
     SeatTypeModule,
     SeatModule,
-    SeatStateModule,
+    RoomStateModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

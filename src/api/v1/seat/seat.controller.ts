@@ -18,7 +18,10 @@ import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
 import { AuthGuard } from '../auth/auth.gruad';
 import { RolesGuard } from '../auth/role.gruad';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('Seat')
 @Controller('seat')
 export class SeatController {
   constructor(private readonly seatService: SeatService) {}

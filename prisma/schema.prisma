@@ -81,6 +81,7 @@ model Schedule {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   bookings  Booking[]
+  roomState RoomState?
 }
 
 model Room {
@@ -88,29 +89,27 @@ model Room {
   roomName            String    @unique
   schedule            Schedule[]
   capacity            String
-  seatStates          SeatState[]
+  seatStates          RoomState[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
 
-model SeatState {
-  id        Int       @id @default(autoincrement())
-  room      Room      @relation(fields: [roomId], references: [id])
-  roomId    Int
-  seat      Seat      @relation(fields: [seatId], references: [id])
-  seatId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  booking   Booking[]
-  @@unique([roomId,seatId])
+model RoomState {
+  id                  Int  @id @default(autoincrement())
+  schedule            Schedule @relation(fields: [scheduleId],references: [id])
+  scheduleId          Int @unique
+  room                Room @relation(fields: [roomId],references: [id])
+  roomId              Int 
+  availableSeat       Int[]
+  unavailableSeat     Int[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
-
 model Seat {
   id         Int         @id @default(autoincrement())
   name       String      @unique
   seatType   SeatType    @relation(fields: [seatTypeId], references: [id])
   seatTypeId Int
-  seatStates SeatState[]
 }
 
 model SeatType {
@@ -122,13 +121,12 @@ model SeatType {
 
 model Booking {
   id          Int       @id @default(autoincrement())
-  seatState   SeatState @relation(fields: [seatStateId], references: [id])
-  seatStateId Int
   account     Auth      @relation(fields: [account_id], references: [id])
   account_id  Int
   schedule    Schedule  @relation(fields: [schedule_id], references: [id])
   schedule_id Int
   state       State
+  totalPrice  Int
   createdAt   DateTime  @default(now())
 }
 
