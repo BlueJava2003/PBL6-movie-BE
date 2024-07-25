@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsString,
   Matches,
+  Max,
   Min,
 } from 'class-validator';
 
@@ -17,6 +18,7 @@ export class CreateManySeatsDto {
   @IsInt()
   @IsNotEmpty()
   @Min(1)
+  @Max(5)
   rows: number;
   @ApiProperty({
     description: 'The number of seat in a row you want to create',
@@ -25,6 +27,7 @@ export class CreateManySeatsDto {
   @IsInt()
   @IsNotEmpty()
   @Min(1)
+  @Max(10)
   seatsPerRow: number;
 
   @ApiProperty({

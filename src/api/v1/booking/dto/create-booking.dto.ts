@@ -7,7 +7,7 @@ export class CreateBookingDto {
   @IsNotEmpty()
   scheduleId: number;
 
-  @ApiProperty({ description: 'List of seat Ids you want to book' })
+  @ApiProperty({ description: 'List of seat Ids(number) you want to book' })
   @ArrayNotEmpty()
   @IsInt({ each: true })
   seatIds: number[];

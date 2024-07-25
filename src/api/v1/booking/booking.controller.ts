@@ -46,7 +46,7 @@ export class BookingController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
-  @Get()
+  @Get('admin/all')
   async findAllBooking(): Promise<{ message: string; res: any }> {
     const allBookings = await this.bookingService.findAllHistory();
     return { message: 'Successfull!', res: allBookings };
@@ -56,9 +56,9 @@ export class BookingController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
-  @Get('/admin')
+  @Get('/admin/account/:id')
   async findAllUserBooking(
-    @Query('accountId', ParseIntPipe) accountId,
+    @Param('id', ParseIntPipe) accountId,
   ): Promise<{ message: string; res: any }> {
     const allBookings =
       await this.bookingService.findAllUserBookingHistory(accountId);

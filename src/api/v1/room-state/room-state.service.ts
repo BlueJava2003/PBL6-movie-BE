@@ -86,6 +86,13 @@ export class RoomStateService {
         where: {
           scheduleId: scheduledId,
         },
+        select: {
+          availableSeat: true,
+          unavailableSeat: true,
+          room: {
+            select: { id: true, roomName: true },
+          },
+        },
       });
       if (!roomState)
         throw new HttpException(
@@ -129,7 +136,7 @@ export class RoomStateService {
       }));
       const seats = [...availArray, ...unavailArray];
       seats.sort(compareFn);
-      return { seats: seats };
+      return { room: roomState.room, seats: seats };
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
