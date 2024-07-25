@@ -11,6 +11,16 @@ export class RoomService {
   //Create a room
   async createRoom(createRoomDto: CreateRoomDto): Promise<Room> {
     try {
+      const hasRoomExist = await this.prisma.room.findFirst({
+        where: {
+          roomName: createRoomDto.roomName,
+        },
+      });
+      if (hasRoomExist)
+        throw new HttpException(
+          'Room Name has existed!',
+          HttpStatus.BAD_REQUEST,
+        );
       const room = await this.prisma.room.create({
         data: createRoomDto,
       });
