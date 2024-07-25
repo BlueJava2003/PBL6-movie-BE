@@ -13,6 +13,7 @@ import { ScheduleModule } from './api/v1/schedule/schedule.module';
 import { SeatModule } from './api/v1/seat/seat.module';
 import { RoomStateModule } from './api/v1/room-state/room-state.module';
 import { BookingModule } from './api/v1/booking/booking.module';
+import { GenaraterDataModule } from './api/v1/genarater-data/genarater-data.module';
 
 @Module({
   imports: [
@@ -27,6 +28,8 @@ import { BookingModule } from './api/v1/booking/booking.module';
     SeatModule,
     RoomStateModule,
     BookingModule,
+    GenaraterDataModule
+    
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
