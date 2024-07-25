@@ -61,6 +61,7 @@ export class ScheduleService {
                   actor: true,
                   language: true,
                   urlTrailer: true,
+                  imagePath: true,
                 }
               },
               room: {
@@ -113,6 +114,7 @@ export class ScheduleService {
                             actor: true,
                             language:true,
                             urlTrailer:true,
+                            imagePath: true,
                         }
                     }
                 },
