@@ -39,7 +39,6 @@ export class BookingService {
           scheduleId,
         },
       });
-
       const unavailableSeatIds = roomState.unavailableSeat;
 
       // Filter out the seat Ids are unavailable
@@ -129,8 +128,8 @@ export class BookingService {
     }
   }
   async verifyPayment(): Promise<{ status: string; message: string }> {
-    // Wait 2s
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Wait 5s
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     const isSuccess = Math.random() > 0.3; // 70% success
 
