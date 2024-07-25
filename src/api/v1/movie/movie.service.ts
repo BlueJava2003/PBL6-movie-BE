@@ -54,11 +54,33 @@ export class MovieService {
   }
 
   //get all Movie
-  async getAllMovie(page?: number, limit?: number|10,orderBy?:string): Promise<any> {
+  async getAllMovie(page?: number, limit?: number | 10, orderBy?: string, option?:string): Promise<any> {
     try {
-      const where = {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+  
+      let where: any = {
         deleteAt: false,
+      };
+  
+      if (option === 'today') {
+        where.schedule = {
+          some: {
+            date: {
+              equals: currentDate
+            }
+          }
+        };
+      } else if (option === 'upcoming') {
+        where.schedule = {
+          some: {
+            date: {
+              gt: currentDate
+            }
+          }
+        };
       }
+  
       const select = {
         id: true,
         name: true,
@@ -91,22 +113,25 @@ export class MovieService {
             },
           },
         },
-      }
+      };
+  
       const sortName = {
         name: orderBy,
-      }
-      const result = await this.pagination.paginate<Movie>("movie",{page,limit},where,select,sortName);
-      
+      };
+  
+      const result = await this.pagination.paginate<Movie>("movie", { page, limit }, where, select, sortName);
+  
       const resultArray = Object.values(result);
       const test = resultArray.flat().map(movie => ({
         ...movie,
         schedule: movie.schedule?.map((sch) => ({
           ...sch,
-          date: formatToVietnamDay(sch.date), 
-          timeStart: formatToVietnamTime(sch.timeStart), 
-          timeEnd: formatToVietnamTime(sch.timeEnd), 
+          date: formatToVietnamDay(sch.date),
+          timeStart: formatToVietnamTime(sch.timeStart),
+          timeEnd: formatToVietnamTime(sch.timeEnd),
         }))
       }));
+  
       return test;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);

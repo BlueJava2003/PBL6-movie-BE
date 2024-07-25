@@ -30,4 +30,12 @@ export class PaginationParamsDto {
     default: 'desc',
   })
   orderBy?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    description: 'fill to limit movie',
+    default: 'today | upcoming',
+  })
+  option?: string;
 }
