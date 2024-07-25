@@ -16,6 +16,16 @@ export class SeatTypeService {
     createSeatTypeDto: CreateSeatTypeDto,
   ): Promise<SeatType> {
     try {
+      const hasSeatTypeExist = await this.prisma.seatType.findFirst({
+        where: {
+          name: createSeatTypeDto.name,
+        },
+      });
+      if (hasSeatTypeExist)
+        throw new HttpException(
+          'Seat Type Name has existed!',
+          HttpStatus.BAD_REQUEST,
+        );
       const seatType = await this.prisma.seatType.create({
         data: createSeatTypeDto,
       });
