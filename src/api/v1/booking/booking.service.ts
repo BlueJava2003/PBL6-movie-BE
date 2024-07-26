@@ -151,19 +151,10 @@ export class BookingService {
     // Wait 5s
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    const isSuccess = Math.random() > 0.3; // 70% success
-
-    if (isSuccess) {
-      return {
-        status: 'success',
-        message: 'Token is valid',
-      };
-    } else {
-      return {
-        status: 'failure',
-        message: 'Token is invalid or verification failed',
-      };
-    }
+    return {
+      status: 'success',
+      message: 'Token is valid',
+    };
   }
 
   async findAllHistory(): Promise<{}> {
