@@ -73,7 +73,21 @@ export class BookingService {
   ): Promise<void> {
     const roomState = await this.prisma.roomState.findUnique({
       where: { scheduleId },
+      include: {
+        schedule: true,
+      },
     });
+    if (!roomState) {
+      throw new HttpException('No room state found!', HttpStatus.BAD_REQUEST);
+    }
+    const startTime = new Date(roomState.schedule.timeStart);
+    const now = Date.now();
+    if (now > startTime.getTime()) {
+      throw new HttpException(
+        'This schedule is no longer to be booked!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const unavailableSeats = seatIds.filter((id) =>
       roomState.unavailableSeat.includes(id),
     );
