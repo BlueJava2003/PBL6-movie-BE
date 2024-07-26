@@ -41,7 +41,7 @@ export class GenaraterDataService {
             await this.prisma.room.create({
                 data: {
                   roomName: `A${i}`,
-                  capacity: "50",
+                  capacity: 50,
                 },
               });
         }
