@@ -43,7 +43,7 @@ model Category_movie {
   id        Int      @id @default(autoincrement())
   name      String
   desc      String?
-  deleteAt  Boolean  @default(false)
+  delete_at  Boolean  @default(false)
   movie     Movie[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
