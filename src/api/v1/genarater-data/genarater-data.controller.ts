@@ -28,4 +28,28 @@ export class GenaraterDataController {
         return { message: 'Create successfully!', res: result };
     }
 
+    @Post('genarator-schedule')
+    async generatorSchedule():Promise<{message:string,res:any}>{
+        const result = await this.genaratorservice.createSchedule();
+        return { message: 'Create successfully!', res: result };
+    }
+
+    @Post('genarator-seat-type')
+    async generatorSeatType():Promise<{message:string,res:any}>{
+        const result = await this.genaratorservice.createSeatType();
+        return { message: 'Create successfully!', res: result };
+    }
+
+    @Post('genarator-seat')
+    async generatorSeat():Promise<{message:string,res:any}>{
+        const result = await this.genaratorservice.createSeat();
+        return { message: 'Create successfully!', res: result };
+    }
+
+    @Post('genarator-room-seat')
+    async generatorRoomSeat():Promise<{message:string,res:any}>{
+        const result = await this.genaratorservice.createRoomSeat();
+        return { message: 'Create successfully!', res: result };
+    }
+
 }

@@ -49,7 +49,7 @@ export class CategoryMovieService {
                     }
                 },
                 where:{
-                    deleteAt:false
+                    delete_at:false
                 }
             });
             return result;
@@ -82,7 +82,7 @@ export class CategoryMovieService {
                 },
                 where:{
                     id:id,
-                    deleteAt:false
+                    delete_at:false
                 }
             })
             return result;
@@ -99,7 +99,7 @@ export class CategoryMovieService {
             const result = await this.prisma.category_movie.update({
                 where:{
                     id:id,
-                    deleteAt:false
+                    delete_at:false
                 },
                 data:{
                     ...updateDate
@@ -120,7 +120,7 @@ export class CategoryMovieService {
                 where:{
                     id:id
                 },data:{
-                    deleteAt:true
+                    delete_at:true
                 }
             })
         } catch (error) {
@@ -132,7 +132,7 @@ export class CategoryMovieService {
         const userId = await this.prisma.category_movie.findUnique({
             where:{
                 id:id,
-                deleteAt:false
+                delete_at:false
             }
         });
         return userId;
