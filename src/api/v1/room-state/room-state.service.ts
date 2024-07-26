@@ -21,6 +21,9 @@ export class RoomStateService {
       const allSeats = await this.prisma.seat.findMany({
         select: { id: true },
       });
+      if (allSeats.length === 0) {
+        throw new HttpException('No seat found!', HttpStatus.BAD_REQUEST);
+      }
       const seatIds = allSeats.map((seat) => seat.id);
       const hasRoomExist = await this.prisma.room.findUnique({
         where: {
