@@ -56,9 +56,10 @@ export class MovieService {
   //get all Movie
   async getAllMovie(page?: number, limit?: number | 10, orderBy?: string, option?:string): Promise<any> {
     try {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-  
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date();
+      endDate.setHours(23, 59, 59, 59);
       let where: any = {
         deleteAt: false,
       };
@@ -67,7 +68,8 @@ export class MovieService {
         where.schedule = {
           some: {
             date: {
-              equals: currentDate
+              gte: startDate,
+              lte: endDate
             }
           }
         };
@@ -75,7 +77,7 @@ export class MovieService {
         where.schedule = {
           some: {
             date: {
-              gt: currentDate
+              gt: endDate
             }
           }
         };
