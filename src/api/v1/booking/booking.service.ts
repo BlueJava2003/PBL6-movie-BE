@@ -7,7 +7,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { PrismaService } from 'src/prisma.service';
 import { RoomStateService } from '../room-state/room-state.service';
-import { Booking, State } from '@prisma/client';
+import { Booking, RoomState, State } from '@prisma/client';
 import { PaymentBookingDto } from './dto/payment-booking.dto';
 import { scheduled } from 'rxjs';
 import { UpdateRoomStateDto } from '../room-state/dto/update-room-state.dto';
@@ -25,107 +25,127 @@ export class BookingService {
   ): Promise<Booking> {
     try {
       const { scheduleId, seatIds } = createBookingDto;
-      const hasScheduleExisted = await this.prisma.schedule.findUnique({
-        where: {
-          id: scheduleId,
-        },
-      });
-      if (!hasScheduleExisted) {
-        throw new HttpException('Schedule not found!', HttpStatus.BAD_REQUEST);
-      }
 
-      const roomState = await this.prisma.roomState.findUnique({
-        where: {
-          scheduleId,
-        },
-      });
-      const unavailableSeatIds = roomState.unavailableSeat;
+      await this.validateSchedule(scheduleId);
 
-      // Filter out the seat Ids are unavailable
-      const seatsBook = [...new Set(seatIds)]; // This is for removing dupication
-      const unavailableSeats = seatsBook.filter((id) =>
-        unavailableSeatIds.includes(id),
+      const seatsToBook = [...new Set(seatIds)]; // Remove duplicates
+
+      await this.validateSeatAvailability(scheduleId, seatsToBook);
+
+      await this.roomStateService.updateRoomState(scheduleId, { seatIds }); //Update room state
+
+      const totalPrice = await this.calculateTotalPrice(seatsToBook);
+
+      const booking = await this.createInitialBooking(
+        accountId,
+        scheduleId,
+        seatsToBook,
+        totalPrice,
       );
-      if (unavailableSeats.length !== 0) {
-        throw new HttpException(
-          `Seats with these IDs are not available: [${unavailableSeats.join(',')}]`,
-          HttpStatus.BAD_REQUEST,
-        );
+
+      const paymentStatus = await this.verifyPayment();
+
+      if (paymentStatus.status === 'failure') {
+        await this.handlePaymentFailure(booking, scheduleId, seatIds);
       }
 
-      //Update room state
-      await this.roomStateService.updateRoomState(scheduleId, {
-        seatIds: seatsBook,
-      });
-
-      //Calculate total price of all seats
-      let totalPrice = 0;
-      const seats = await this.prisma.seat.findMany({
-        where: {
-          id: {
-            in: seatIds,
-          },
-        },
-        include: {
-          seatType: true,
-        },
-      });
-      seats.forEach((seat) => {
-        totalPrice += seat.seatType.price;
-      });
-
-      const booking = await this.prisma.booking.create({
-        data: {
-          scheduleId,
-          accountId,
-          seatsBooked: seatsBook,
-          totalPrice,
-          state: State.PENDING,
-        },
-      });
-
-      const payment = await this.verifyPayment(); // Wait 2s
-
-      if (payment.status === 'failure') {
-        //Delete the PENDING record
-        await this.prisma.booking.delete({ where: { id: booking.id } });
-
-        const roomState = await this.prisma.roomState.findFirst({
-          where: {
-            scheduleId: scheduleId,
-          },
-        });
-        const newUnavailableSeats = roomState.unavailableSeat.filter(
-          (id) => !seatIds.includes(id),
-        );
-
-        // Reset state of seats (to available)
-        await this.prisma.roomState.update({
-          where: {
-            scheduleId,
-          },
-          data: {
-            availableSeat: {
-              push: booking.seatsBooked,
-            },
-            unavailableSeat: newUnavailableSeats,
-          },
-        });
-
-        throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
-      }
-
-      //If success, update booking with SUCCESS state
-      const updatedBooking = await this.prisma.booking.update({
-        where: { id: booking.id },
-        data: {
-          state: State.SUCCESS,
-        },
-      });
-      return updatedBooking;
+      return await this.finalizeBooking(booking.id);
     } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        error.message || 'Booking creation failed',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+  }
+
+  private async validateSchedule(scheduleId: number): Promise<void> {
+    const schedule = await this.prisma.schedule.findUnique({
+      where: { id: scheduleId },
+    });
+    if (!schedule) {
+      throw new HttpException('Schedule not found!', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private async validateSeatAvailability(
+    scheduleId: number,
+    seatIds: number[],
+  ): Promise<void> {
+    const roomState = await this.prisma.roomState.findUnique({
+      where: { scheduleId },
+    });
+    const unavailableSeats = seatIds.filter((id) =>
+      roomState.unavailableSeat.includes(id),
+    );
+
+    if (unavailableSeats.length > 0) {
+      throw new HttpException(
+        `Seats with these IDs are not available: [${unavailableSeats.join(',')}]`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  private async calculateTotalPrice(seatIds: number[]): Promise<number> {
+    const seats = await this.prisma.seat.findMany({
+      where: { id: { in: seatIds } },
+      include: { seatType: true },
+    });
+    return seats.reduce((total, seat) => total + seat.seatType.price, 0);
+  }
+
+  private async createInitialBooking(
+    accountId: number,
+    scheduleId: number,
+    seatsBooked: number[],
+    totalPrice: number,
+  ): Promise<Booking> {
+    return this.prisma.booking.create({
+      data: {
+        scheduleId,
+        accountId,
+        seatsBooked,
+        totalPrice,
+        state: State.PENDING,
+      },
+    });
+  }
+
+  private async handlePaymentFailure(
+    booking: Booking,
+    scheduleId: number,
+    seatIds: number[],
+  ): Promise<void> {
+    await this.prisma.booking.delete({ where: { id: booking.id } });
+    await this.resetRoomState(scheduleId, seatIds);
+    throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
+  }
+
+  private async resetRoomState(
+    scheduleId: number,
+    seatIds: number[],
+  ): Promise<void> {
+    const roomState = await this.prisma.roomState.findFirst({
+      where: { scheduleId },
+    });
+    const newUnavailableSeats = roomState.unavailableSeat.filter(
+      (id) => !seatIds.includes(id),
+    );
+
+    await this.prisma.roomState.update({
+      where: { scheduleId },
+      data: {
+        availableSeat: { push: seatIds },
+        unavailableSeat: newUnavailableSeats,
+      },
+    });
+  }
+
+  private async finalizeBooking(bookingId: number): Promise<Booking> {
+    return this.prisma.booking.update({
+      where: { id: bookingId },
+      data: { state: State.SUCCESS },
+    });
   }
   async verifyPayment(): Promise<{ status: string; message: string }> {
     // Wait 5s
@@ -314,84 +334,80 @@ export class BookingService {
     updateBookingDto: UpdateBookingDto,
   ): Promise<Booking> {
     try {
-      const booking = await this.prisma.booking.findUnique({
-        where: {
-          id: bookingId,
-        },
-      });
-
-      if (!booking || booking.isDeleted || booking.state !== State.SUCCESS) {
-        throw new HttpException('No booking found!', HttpStatus.BAD_REQUEST);
-      }
-
+      const booking = await this.findAndValidateBooking(bookingId);
       const seatsUpdate = [...new Set(updateBookingDto.seatIds)];
+      const roomState = await this.findRoomState(booking.scheduleId);
+      await this.validateSeatAvailability(roomState.scheduleId, seatsUpdate);
 
-      const roomState = await this.prisma.roomState.findFirst({
-        where: { scheduleId: booking.scheduleId },
-      });
-
-      if (!roomState) {
-        throw new HttpException(
-          'Room state not found!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // Update unavailable seats
-      const newUnavailableSeats = roomState.unavailableSeat.filter(
-        (id) => !seatsUpdate.includes(id),
+      await this.updateRoomStateSeats(
+        roomState,
+        booking.seatsBooked,
+        seatsUpdate,
       );
-
-      //Remove booked seat in room state (reset back to the point before booking these )
-      await this.prisma.roomState.update({
-        where: { scheduleId: booking.scheduleId },
-        data: {
-          unavailableSeat: { set: newUnavailableSeats },
-          availableSeat: { push: booking.seatsBooked },
-        },
-      });
-
-      // Try to update room state if seats are booked or not
-      const updateRoomStateDto: UpdateRoomStateDto = {
+      await this.roomStateService.updateRoomState(booking.scheduleId, {
         seatIds: seatsUpdate,
-      };
-      await this.roomStateService.updateRoomState(
-        booking.scheduleId,
-        updateRoomStateDto,
-      );
-
-      // Recalculate total price of all seats
-      const seats = await this.prisma.seat.findMany({
-        where: {
-          id: {
-            in: seatsUpdate,
-          },
-        },
-        include: {
-          seatType: true,
-        },
       });
 
-      const totalPrice = seats.reduce((total, seat) => {
-        return total + seat.seatType.price;
-      }, 0);
-
-      const updatedBooking = await this.prisma.booking.update({
-        where: {
-          id: bookingId,
-        },
-        data: {
-          seatsBooked: seatsUpdate,
-          totalPrice,
-        },
-      });
-
-      return updatedBooking;
+      const totalPrice = await this.calculateTotalPrice(seatsUpdate);
+      return this.updateBookingDetails(bookingId, seatsUpdate, totalPrice);
     } catch (error) {
-      throw new HttpException(error.message || error, HttpStatus.BAD_REQUEST);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.message || 'An error occurred while updating the booking',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
+  private async findAndValidateBooking(bookingId: number): Promise<Booking> {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+    if (!booking || booking.isDeleted || booking.state !== State.SUCCESS) {
+      throw new HttpException('No booking found!', HttpStatus.BAD_REQUEST);
+    }
+    return booking;
+  }
+
+  private async findRoomState(scheduleId: number): Promise<RoomState> {
+    const roomState = await this.prisma.roomState.findFirst({
+      where: { scheduleId },
+    });
+    if (!roomState) {
+      throw new HttpException('Room state not found!', HttpStatus.BAD_REQUEST);
+    }
+    return roomState;
+  }
+
+  private async updateRoomStateSeats(
+    roomState: RoomState,
+    oldSeats: number[],
+    newSeats: number[],
+  ): Promise<void> {
+    const newUnavailableSeats = roomState.unavailableSeat.filter(
+      (id) => !newSeats.includes(id),
+    );
+    await this.prisma.roomState.update({
+      where: { scheduleId: roomState.scheduleId },
+      data: {
+        unavailableSeat: { set: newUnavailableSeats },
+        availableSeat: { push: oldSeats },
+      },
+    });
+  }
+
+  private async updateBookingDetails(
+    bookingId: number,
+    seatsBooked: number[],
+    totalPrice: number,
+  ): Promise<Booking> {
+    return this.prisma.booking.update({
+      where: { id: bookingId },
+      data: { seatsBooked, totalPrice },
+    });
+  }
   //Soft delete a booking
   async remove(bookingId: number): Promise<void> {
     try {
