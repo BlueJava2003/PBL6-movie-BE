@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsNumberString,
   IsString,
+  Matches,
   Max,
   Min,
   max,
@@ -14,12 +15,14 @@ export class CreateRoomDto {
   @ApiProperty({ description: 'Room Name', default: '01' })
   @IsString()
   @Transform(({ value }) => value.trim().toUpperCase())
-  name: string;
   @IsNotEmpty()
+  @Matches(/^[\p{L}\p{N}\s]+$/u, {
+    message: 'Room name can only contain letters, numbers, and spaces',
+  })
   roomName: string;
   @ApiProperty({ description: 'Capacity', default: 50 })
   @IsNotEmpty()
   @Min(1)
-  @Max(100)
+  @Max(50)
   capacity: number;
 }
