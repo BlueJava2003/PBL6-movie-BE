@@ -11,18 +11,20 @@ import { Booking, RoomState, State } from '@prisma/client';
 import { PaymentBookingDto } from './dto/payment-booking.dto';
 import { scheduled } from 'rxjs';
 import { UpdateRoomStateDto } from '../room-state/dto/update-room-state.dto';
+import { MailerService } from './../../mailer/mailer.service';
 
 @Injectable()
 export class BookingService {
   constructor(
     private prisma: PrismaService,
     private roomStateService: RoomStateService,
+    private mailerService: MailerService,
   ) {}
   //Create a booking with PENDING state
   async createBooking(
     accountId: number,
     createBookingDto: CreateBookingDto,
-  ): Promise<Booking> {
+  ): Promise<{}> {
     try {
       const { scheduleId, seatIds } = createBookingDto;
 
@@ -30,6 +32,11 @@ export class BookingService {
 
       const seatsToBook = [...new Set(seatIds)]; // Remove duplicates
 
+      if (seatsToBook.length > 8)
+        throw new HttpException(
+          'Can not book more than 8 seats at the same time!',
+          HttpStatus.BAD_REQUEST,
+        );
       await this.validateSeatAvailability(scheduleId, seatsToBook);
 
       await this.roomStateService.updateRoomState(scheduleId, { seatIds }); //Update room state
@@ -155,11 +162,61 @@ export class BookingService {
     });
   }
 
-  private async finalizeBooking(bookingId: number): Promise<Booking> {
-    return this.prisma.booking.update({
+  private async finalizeBooking(bookingId: number): Promise<{}> {
+    const successBooking = await this.prisma.booking.update({
       where: { id: bookingId },
       data: { state: State.SUCCESS },
+      select: {
+        state: true,
+        seatsBooked: true,
+        createdAt: true,
+        updatedAt: true,
+        totalPrice: true,
+        account: {
+          select: { email: true, fullname: true },
+        },
+        schedule: {
+          select: {
+            movie: {
+              select: {
+                name: true,
+              },
+            },
+            timeStart: true,
+            roomState: {
+              select: {
+                room: {
+                  select: {
+                    roomName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+    const seatsBookedInfo = await this.prisma.seat.findMany({
+      where: { id: { in: successBooking.seatsBooked } },
+    });
+    const seatsName = seatsBookedInfo.map((seat) => seat.name);
+    const userEmail = successBooking.account.email;
+    const emailContext = {
+      movieName: successBooking.schedule.movie.name,
+      hall: successBooking.schedule.roomState.room.roomName,
+      seats: seatsName.join(', '),
+      paymentTime: `${formatToVietnamDay(successBooking.updatedAt)} ${formatToVietnamTime(successBooking.updatedAt)}`,
+      showTime: `${formatToVietnamDay(successBooking.schedule.timeStart)} ${formatToVietnamTime(successBooking.schedule.timeStart)}`,
+      totalAmount: `${successBooking.totalPrice}`,
+    };
+    await this.mailerService.sendMail(
+      userEmail,
+      'Thông tin đặt vé xem phim',
+      `Xin chào ${successBooking.account.fullname}, đây là thông tin đặt vé xem phim của bạn.`,
+      this.mailerService.createHtml(emailContext), //Create HTML to send email
+    );
+
+    return successBooking;
   }
   async verifyPayment(): Promise<{ status: string; message: string }> {
     // Wait 5s
