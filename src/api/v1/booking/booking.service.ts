@@ -177,6 +177,11 @@ export class BookingService {
         },
         schedule: {
           select: {
+            movie: {
+              select: {
+                name: true,
+              },
+            },
             timeStart: true,
             roomState: {
               select: {
@@ -197,17 +202,18 @@ export class BookingService {
     const seatsName = seatsBookedInfo.map((seat) => seat.name);
     const userEmail = successBooking.account.email;
     const emailContext = {
+      movieName: successBooking.schedule.movie.name,
       hall: successBooking.schedule.roomState.room.roomName,
       seats: seatsName.join(', '),
       paymentTime: `${formatToVietnamDay(successBooking.updatedAt)} ${formatToVietnamTime(successBooking.updatedAt)}`,
       showTime: `${formatToVietnamDay(successBooking.schedule.timeStart)} ${formatToVietnamTime(successBooking.schedule.timeStart)}`,
-      totalAmount: `${successBooking.totalPrice} VNĐ`,
+      totalAmount: `${successBooking.totalPrice}`,
     };
     await this.mailerService.sendMail(
       userEmail,
-      'Payment receipt - Booking Movie Ticket!',
-      '',
-      this.mailerService.createHtml(emailContext),
+      'Thông tin đặt vé xem phim',
+      `Xin chào ${successBooking.account.fullname}, đây là thông tin đặt vé xem phim của bạn.`,
+      this.mailerService.createHtml(emailContext), //Create HTML to send email
     );
 
     return successBooking;

@@ -64,6 +64,12 @@ export class MailerService {
               }
               .content {
                   margin: 20px 0;
+                  display:flex;
+                  flex-direction:column;
+                  justify-content:center;
+                  align-items:center;
+                  flex-wrap:no-wrap;
+
               }
               .content h1 {
                   font-size: 24px;
@@ -78,7 +84,7 @@ export class MailerService {
                   border-collapse: collapse;
               }
               .invoice-table th, .invoice-table td {
-                  border: none;
+                  border: 1px solid black;
                   padding: 8px;
                   text-align: left;
               }
@@ -96,15 +102,21 @@ export class MailerService {
                   font-size: 14px;
                   color: #888;
               }
+              .qr-code {
+                  background-color:white;
+                  width:300px;
+                  height:300px;
+                  margin: 0 auto;
+              }
           </style>
       </head>
       <body>
           <div class="container">
               <div class="header">
-                  <h1>Invoice Payment</h1>
+                  <h1>${context.movieName}t</h1>
               </div>
               <div class="content">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/736px-QR_Code_Example.svg.png?20111025115625" alt="QR Image">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/736px-QR_Code_Example.svg.png?20111025115625" class="qr-code" alt="QR Image">
 
                   <table class="invoice-table">
                       <tr>
