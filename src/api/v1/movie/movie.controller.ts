@@ -55,6 +55,13 @@ export class MovieController {
         const result = await this.movieService.getAllMovieFollowDay(date,movieId);
         return { message:`Get list movie follow day successfully`,res:result };
     }
+
+    @Get('getDailyDates')
+    async getDailyDates():Promise<{message:string,res:any}>{
+        const result = await this.movieService.getDailyDates();
+        return { message:`Get list day successfully`,res:result };
+    }
+
     //update movie
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
