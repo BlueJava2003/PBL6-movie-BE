@@ -272,6 +272,18 @@ export class MovieService {
     }
   }
 
+  async getDailyDates() {
+    const currentDate = new Date();
+    const dates = [];
+  
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      dates.push(date);
+    }
+  
+    return dates;
+  }
+
   // update Movie
   async updateMovie(
     updateData: updateMovieDTO,
