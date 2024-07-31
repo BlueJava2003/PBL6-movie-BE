@@ -1,4 +1,4 @@
-import { Controller,  Post, Body, Headers, HttpStatus,HttpCode, UseGuards, Req, HttpException } from '@nestjs/common';
+import { Controller,  Post, Body, Headers, HttpStatus,HttpCode, UseGuards, Req, HttpException, Get } from '@nestjs/common';
 import { LoginDTO } from './dto/login.dto';
 import { ApiTags ,ApiBearerAuth} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -52,6 +52,17 @@ export class AuthController {
       }
      
     }
+
+    @UseGuards(AuthGuard)
+    @Get('checkToken')
+    async checkToken ():Promise<any>{
+      try {
+        return { message: 'Check Token in successfully!', res: "" };
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST)
+      }
+    }
+    
     //forgotPassword
     @Post('forgotPassword')
     @HttpCode(HttpStatus.OK)
