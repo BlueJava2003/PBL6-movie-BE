@@ -12,33 +12,70 @@ import { formatToVietnamDay, formatToVietnamTime } from 'src/api/utils/formatDat
 export class ScheduleService {
     constructor(private readonly prisma:PrismaService){}
 
-    dateToSeconds(timeStart:Date,timeEnd:Date): number {
+    dateToSeconds(timeStart: Date, timeEnd: Date): number {
+        const currentTimestamp = Math.floor(new Date().getTime() / 1000);
         const start = Math.floor(timeStart.getTime() / 1000);
         const end = Math.floor(timeEnd.getTime() / 1000);
-        if(start >= end)
-            throw new HttpException(`TimeStart is not allowed to be greater than or equal timeEnd `, HttpStatus.BAD_REQUEST)
-        return 1
+      
+        if (start >= end) {
+          throw new HttpException(`TimeStart is not allowed to be greater than or equal to timeEnd`, HttpStatus.BAD_REQUEST);
+        }
+      
+        if (start < currentTimestamp || end < currentTimestamp) {
+          throw new HttpException(`TimeStart and timeEnd must be greater than or equal to the current time`, HttpStatus.BAD_REQUEST);
+        }
+      
+        return end - start;
       }
 
     //create Schedule
-    async createSchedule(data:CreateScheduleDTO):Promise<Schedule>{
+    async createSchedule(data: CreateScheduleDTO): Promise<Schedule> {
         try {
-            const {timeStart,timeEnd} = data;
-            this.dateToSeconds(timeStart,timeEnd)
-            const check = await this.prisma.movie.findUnique({
-                where:{
-                    id:data.movieId
-                }
-            })
-            if(!check)
-                throw new HttpException(`Movie id not found `, HttpStatus.BAD_REQUEST)
-            const result = await this.prisma.schedule.create({data:{...data}});
-            return result;
+          const { timeStart, timeEnd, movieId, date } = data;
+          const check = this.dateToSeconds(timeStart,timeEnd) / 60;
+          const movie = await this.prisma.movie.findUnique({ where: { id: movieId } });
+          if(check < movie.duration || check > movie.duration + 10){
+            throw new HttpException(`Create Schedule invalid`, HttpStatus.BAD_REQUEST);
+          }
+
+          if (!movie) {
+            throw new HttpException(`Movie id not found`, HttpStatus.BAD_REQUEST);
+          }
+      
+          const existingSchedules = await this.prisma.schedule.findMany({
+            where: {
+              movieId,
+              date,
+              OR: [
+                {
+                  timeStart: {
+                    lte: timeEnd,
+                  },
+                  timeEnd: {
+                    gte: timeStart,
+                  },
+                },
+                {
+                  timeStart: {
+                    gte: timeStart,
+                    lte: timeEnd,
+                  },
+                },
+              ],
+            },
+          });
+      
+          if (existingSchedules.length > 0) {
+            throw new HttpException(`There is an overlapping schedule for this movie on the same day`, HttpStatus.BAD_REQUEST);
+          }
+      
+          // Create the new schedule
+          const result = await this.prisma.schedule.create({ data: { ...data } });
+          return result;
         } catch (error) {
-            throw new HttpException(error,HttpStatus.BAD_REQUEST)
+          throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
-        
-    }
+      }
 
     //get all Schedule
     async getAllSchedule(): Promise<GetScheduleDTO[]> {
@@ -64,13 +101,6 @@ export class ScheduleService {
                   imagePath: true,
                 }
               },
-              room: {
-                select: {
-                  id: true,
-                  roomName: true,
-                  capacity: true
-                }
-              }
             },
             where: {
               deleteAt: false
