@@ -107,12 +107,6 @@ export class MovieService {
             date: true,
             timeStart: true,
             timeEnd: true,
-            room: {
-              select: {
-                id: true,
-                roomName: true
-              },
-            },
           },
         },
       };
@@ -168,12 +162,6 @@ export class MovieService {
               date: true,
               timeStart: true,
               timeEnd: true,
-              room: {
-                select: {
-                  id: true,
-                  roomName: true
-                },
-              },
             },
           },
         },
@@ -243,12 +231,6 @@ export class MovieService {
               date: true,
               timeStart: true,
               timeEnd: true,
-              room: {
-                select: {
-                  id: true,
-                  roomName: true
-                },
-              },
             },
           },
           category: true,
@@ -382,7 +364,6 @@ export class MovieService {
             date: true,
             timeStart: true,
             timeEnd: true,
-            roomId: true,
           },
         },
       },
