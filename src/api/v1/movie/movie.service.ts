@@ -232,12 +232,13 @@ export class MovieService {
               timeStart: true,
               timeEnd: true,
             },
+            orderBy:{
+              createdAt:'desc'
+            }
           },
           category: true,
         },
-        orderBy:{
-          createdAt:'desc'
-        }
+        
       });
       const newResult = movies.map((movie) => ({
         ...movie,
