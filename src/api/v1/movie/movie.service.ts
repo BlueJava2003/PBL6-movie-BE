@@ -111,11 +111,11 @@ export class MovieService {
         },
       };
   
-      const sortName = {
-        name: orderBy,
+      const sortDate= {
+        createAt: orderBy,
       };
   
-      const result = await this.pagination.paginate<Movie>("movie", { page, limit }, where, select, sortName);
+      const result = await this.pagination.paginate<Movie>("movie", { page, limit }, where, select, sortDate);
   
       const resultArray = Object.values(result);
       const test = resultArray.flat().map(movie => ({
@@ -235,6 +235,9 @@ export class MovieService {
           },
           category: true,
         },
+        orderBy:{
+          createdAt:'desc'
+        }
       });
       const newResult = movies.map((movie) => ({
         ...movie,
