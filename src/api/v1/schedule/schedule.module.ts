@@ -4,7 +4,7 @@ import { ScheduleController } from './schedule.controller';
 import { PrismaService } from 'src/prisma.service';
 
 @Module({
-  providers: [ScheduleService,PrismaService],
-  controllers: [ScheduleController]
+  providers: [ScheduleService, PrismaService],
+  controllers: [ScheduleController],
 })
 export class ScheduleModule {}

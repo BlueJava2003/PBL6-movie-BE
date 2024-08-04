@@ -3,10 +3,10 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class GenaraterDataService {
-    constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async createCategory(): Promise<void> {
-      await this.prisma.$executeRaw`
+  async createCategory(): Promise<void> {
+    await this.prisma.$executeRaw`
           INSERT INTO public."Category_movie" (name, "desc", delete_at, created_at, updated_at) VALUES
             ('Action', 'Action movies', false, NOW(), NOW()),
             ('Comedy', 'Funny movies', false, NOW(), NOW()),
@@ -29,10 +29,10 @@ export class GenaraterDataService {
             ('Western', 'Movies set in the American Old West', false, NOW(), NOW()),
             ('History', 'Movies based on historical events', false, NOW(), NOW())
         `;
-      }
+  }
 
-    async createMovie():Promise<void>{
-      await this.prisma.$executeRaw`
+  async createMovie(): Promise<void> {
+    await this.prisma.$executeRaw`
       INSERT INTO public."Movie" (
         "name", "desc", "duration", "releaseDate", "imageId", "imagePath", "categoryId", "director", "actor", "language", "urlTrailer", "deleteAt", "createdAt", "updatedAt"
       ) VALUES
@@ -48,10 +48,10 @@ export class GenaraterDataService {
         ('Pulp Fiction', 'A non-linear crime film', 154, '1994-10-14', 'mno345', 'https://th.bing.com/th/id/OIP.o51YcsduW3TM0AjhSuwUAgHaEo?w=273&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7', 15, 'Quentin Tarantino', 'John Travolta, Samuel L. Jackson', 'English', 'https://www.youtube.com/watch?v=s7EdQ4FqbhY', false, NOW(), NOW())
         
     `;
-    }
+  }
 
-    async createRoom():Promise<void>{
-      await this.prisma.$executeRaw` INSERT INTO "Room" (
+  async createRoom(): Promise<void> {
+    await this.prisma.$executeRaw` INSERT INTO "Room" (
         "roomName", 
         "capacity",
         "createdAt",
@@ -78,10 +78,10 @@ export class GenaraterDataService {
       ('Room 19', 50, NOW(), NOW()),
       ('Room 20', 50, NOW(), NOW())
       `;
-    }
+  }
 
-    async createSchedule():Promise<void>{
-      await this.prisma.$executeRaw` INSERT INTO public."Schedule" (
+  async createSchedule(): Promise<void> {
+    await this.prisma.$executeRaw` INSERT INTO public."Schedule" (
         "date",
         "timeStart",
         "timeEnd",
@@ -127,19 +127,19 @@ export class GenaraterDataService {
       ('2024-08-01 14:00:00', '2024-08-01 14:00:00', '2024-08-01 16:00:00', 1, 1, false, now(), now()),
       ('2024-08-01 16:00:00', '2024-08-01 16:00:00', '2024-08-01 18:00:00', 1, 1, false, now(), now())
       `;
-    }
+  }
 
-    async createSeatType():Promise<void>{
-      await this.prisma.$executeRaw`
+  async createSeatType(): Promise<void> {
+    await this.prisma.$executeRaw`
         INSERT INTO public."SeatType" (name, price)
         VALUES
         ('Standard', 100000),
         ('VIP', 200000)
       `;
-    }
+  }
 
-    async createSeat():Promise<void>{
-      await this.prisma.$executeRaw`
+  async createSeat(): Promise<void> {
+    await this.prisma.$executeRaw`
         INSERT INTO "Seat" ("name", "seatTypeId")
         VALUES
           ('A1', 1), ('A2', 1), ('A3', 1), ('A4', 1), ('A5', 1),
@@ -152,11 +152,11 @@ export class GenaraterDataService {
           ('D6', 2), ('D7', 2), ('D8', 2), ('D9', 2), ('D10', 2),
           ('E1', 2), ('E2', 2), ('E3', 2), ('E4', 2), ('E5', 2),
           ('E6', 2), ('E7', 2), ('E8', 2), ('E9', 2), ('E10', 2)
-          `; 
-    }
+          `;
+  }
 
-    async createRoomSeat():Promise<void>{
-      await this.prisma.$executeRaw`
+  async createRoomSeat(): Promise<void> {
+    await this.prisma.$executeRaw`
       INSERT INTO public."RoomState" ("scheduleId", "roomId", "availableSeat", "unavailableSeat", "createdAt","updatedAt")
       VALUES
         (1, 1, ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], '{}',now(),now()),
@@ -195,6 +195,5 @@ export class GenaraterDataService {
         (34, 1, ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], '{}',now(),now()),
         (35, 1, ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], '{}',now(),now())
             `;
-          }
-
-      }
+  }
+}

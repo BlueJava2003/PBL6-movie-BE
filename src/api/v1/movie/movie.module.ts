@@ -6,8 +6,8 @@ import { CloudinaryModule } from 'src/api/cloudinary/cloudinary.module';
 import { PaginationService } from 'src/api/util/paginination';
 
 @Module({
-  imports:[CloudinaryModule],
+  imports: [CloudinaryModule],
   controllers: [MovieController],
-  providers: [MovieService,PrismaService,PaginationService]
+  providers: [MovieService, PrismaService, PaginationService],
 })
 export class MovieModule {}

@@ -16,7 +16,7 @@ export class MovieService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly pagination :PaginationService,
+    private readonly pagination: PaginationService,
   ) {}
 
   //create Movie
@@ -54,7 +54,12 @@ export class MovieService {
   }
 
   //get all Movie
-  async getAllMovie(page?: number, limit?: number | 10, orderBy?: string, option?:string): Promise<any> {
+  async getAllMovie(
+    page?: number,
+    limit?: number | 10,
+    orderBy?: string,
+    option?: string,
+  ): Promise<any> {
     try {
       const startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
@@ -63,26 +68,26 @@ export class MovieService {
       let where: any = {
         deleteAt: false,
       };
-  
+
       if (option === 'today') {
         where.schedule = {
           some: {
             date: {
               gte: startDate,
-              lte: endDate
-            }
-          }
+              lte: endDate,
+            },
+          },
         };
       } else if (option === 'upcoming') {
         where.schedule = {
           some: {
             date: {
-              gt: endDate
-            }
-          }
+              gt: endDate,
+            },
+          },
         };
       }
-  
+
       const select = {
         id: true,
         name: true,
@@ -110,24 +115,29 @@ export class MovieService {
           },
         },
       };
-  
-      const sortDate= {
-        createAt: orderBy,
+
+      const sortDate = {
+        createdAt: orderBy,
       };
-  
-      const result = await this.pagination.paginate<Movie>("movie", { page, limit }, where, select, sortDate);
-  
+      const result = await this.pagination.paginate<Movie>(
+        'movie',
+        { page, limit },
+        where,
+        select,
+        sortDate,
+      );
+
       const resultArray = Object.values(result);
-      const test = resultArray.flat().map(movie => ({
+      const test = resultArray.flat().map((movie) => ({
         ...movie,
         schedule: movie.schedule?.map((sch) => ({
           ...sch,
           date: formatToVietnamDay(sch.date),
           timeStart: formatToVietnamTime(sch.timeStart),
           timeEnd: formatToVietnamTime(sch.timeEnd),
-        }))
+        })),
       }));
-  
+
       return test;
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
@@ -173,15 +183,15 @@ export class MovieService {
 
       if (!result)
         throw new HttpException('id not found', HttpStatus.BAD_REQUEST);
-        const newResult = {
-            ...result,
-            schedule: result.schedule.map((data) => ({
-                ...data,
-                date: formatToVietnamDay(data.date),
-                timeStart: formatToVietnamTime(data.timeStart),
-                timeEnd: formatToVietnamTime(data.timeEnd),
-            }))
-        }
+      const newResult = {
+        ...result,
+        schedule: result.schedule.map((data) => ({
+          ...data,
+          date: formatToVietnamDay(data.date),
+          timeStart: formatToVietnamTime(data.timeStart),
+          timeEnd: formatToVietnamTime(data.timeEnd),
+        })),
+      };
 
       return newResult;
     } catch (error) {
@@ -232,13 +242,12 @@ export class MovieService {
               timeStart: true,
               timeEnd: true,
             },
-            orderBy:{
-              createdAt:'desc'
-            }
+            orderBy: {
+              createdAt: 'desc',
+            },
           },
           category: true,
         },
-        
       });
       const newResult = movies.map((movie) => ({
         ...movie,
@@ -258,12 +267,12 @@ export class MovieService {
   async getDailyDates() {
     const currentDate = new Date();
     const dates = [];
-  
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
       dates.push(date);
     }
-  
+
     return dates;
   }
 

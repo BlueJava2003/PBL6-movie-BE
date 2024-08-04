@@ -12,7 +12,7 @@ export class PaginationService {
     params: PaginationParamsDto,
     where: any = {},
     select: any = {},
-    orderBy: any = {}
+    orderBy: any = {},
   ): Promise<PaginatedResult<T>> {
     const { page, limit } = params;
     const skip = (page - 1) * limit;
@@ -29,7 +29,7 @@ export class PaginationService {
     ]);
 
     const totalPages = Math.ceil(total / limit);
-    
+
     return {
       data,
       meta: {

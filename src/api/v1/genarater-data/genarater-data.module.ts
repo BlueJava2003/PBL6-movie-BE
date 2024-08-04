@@ -5,6 +5,6 @@ import { PrismaService } from 'src/prisma.service';
 
 @Module({
   controllers: [GenaraterDataController],
-  providers: [GenaraterDataService,PrismaService]
+  providers: [GenaraterDataService, PrismaService],
 })
 export class GenaraterDataModule {}
