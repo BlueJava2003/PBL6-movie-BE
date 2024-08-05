@@ -7,18 +7,16 @@ import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { MailerService } from 'src/api/mailer/mailer.service';
 
-
 @Module({
-  imports:[
+  imports: [
     PassportModule,
     JwtModule.register({
-      global:true,
-      secret:process.env.JWT_SECRET_KEY,
-      signOptions:{expiresIn:process.env.EXPIRES_ACCESS_TOKEN}
-    })
-   
+      global: true,
+      secret: process.env.JWT_SECRET_KEY,
+      signOptions: { expiresIn: process.env.EXPIRES_ACCESS_TOKEN },
+    }),
   ],
-  providers: [AuthService,PrismaService,JwtStrategy,MailerService],
-  controllers: [AuthController]
+  providers: [AuthService, PrismaService, JwtStrategy, MailerService],
+  controllers: [AuthController],
 })
 export class AuthModule {}

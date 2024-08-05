@@ -1,4 +1,15 @@
-import { Body, Controller, HttpCode, Param, ParseIntPipe,Put, Post,Get,Delete, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Put,
+  Post,
+  Get,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.gruad';
@@ -11,46 +22,55 @@ import { UpdateScheduleDTO } from './dto/updateSchedule.dto';
 @ApiTags('schedule')
 @Controller('schedule')
 export class ScheduleController {
-    constructor(private readonly ScheduleService:ScheduleService){}
-    //create Schedule movie
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    @Post('createSchedule')
-    @HttpCode(200)
-    async createSchedule(@Body() body:CreateScheduleDTO):Promise<{message:string,res:any}>{
-        const result = await this.ScheduleService.createSchedule(body)
-        return {message:'Create Schedule movie successfully', res:result}
-    }
-    //update Schedule movie
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    @Put('updateSchedule/:id')
-    @HttpCode(200)
-    async updateSchedule(@Body() body:UpdateScheduleDTO, @Param('id',ParseIntPipe) id:number):Promise<{message:string,res:any}>{
-        const result = await this.ScheduleService.updateSchedule(body,id)
-        return {message:'Update Schedule movie successfully', res:result}
-    }
-    //get all Schedule movie
-    @Get('getAllSchedule')
-    @HttpCode(200)
-    async getAllSchedule (): Promise<{message:string,res:any}>{
-        const result = await this.ScheduleService.getAllSchedule()
-        return {message:'Get list Schedule movie successfully', res:result}
-    }
-    // get Schedule moive id
-    @Get('getScheduleId/:id')
-    @HttpCode(200)
-    async getScheduleId (@Param('id',ParseIntPipe) id:number): Promise<{message:string,res:any}>{
-        const result = await this.ScheduleService.getScheduleId(id)
-        return {message:`Get Schedule movie id ${id} successfully`, res:result}
-    }
-    //delete Schedule movie
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    @Delete('deleteSchedule/:id')
-    @HttpCode(200)
-    async deleteSchedule (@Param('id',ParseIntPipe) id:number): Promise<{message:string}>{
-        await this.ScheduleService.deleteSchedule(id)
-        return {message:`Delete Schedule movie id ${id} successfully`}
-    }
+  constructor(private readonly ScheduleService: ScheduleService) {}
+  //create Schedule movie
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('createSchedule')
+  @HttpCode(200)
+  async createSchedule(
+    @Body() body: CreateScheduleDTO,
+  ): Promise<{ message: string; res: any }> {
+    const result = await this.ScheduleService.createSchedule(body);
+    return { message: 'Create Schedule movie successfully', res: result };
+  }
+  //update Schedule movie
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Put('updateSchedule/:id')
+  @HttpCode(200)
+  async updateSchedule(
+    @Body() body: UpdateScheduleDTO,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string; res: any }> {
+    const result = await this.ScheduleService.updateSchedule(body, id);
+    return { message: 'Update Schedule movie successfully', res: result };
+  }
+  //get all Schedule movie
+  @Get('getAllSchedule')
+  @HttpCode(200)
+  async getAllSchedule(): Promise<{ message: string; res: any }> {
+    const result = await this.ScheduleService.getAllSchedule();
+    return { message: 'Get list Schedule movie successfully', res: result };
+  }
+  // get Schedule moive id
+  @Get('getScheduleId/:id')
+  @HttpCode(200)
+  async getScheduleId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string; res: any }> {
+    const result = await this.ScheduleService.getScheduleId(id);
+    return { message: `Get Schedule movie id ${id} successfully`, res: result };
+  }
+  //delete Schedule movie
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete('deleteSchedule/:id')
+  @HttpCode(200)
+  async deleteSchedule(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string }> {
+    await this.ScheduleService.deleteSchedule(id);
+    return { message: `Delete Schedule movie id ${id} successfully` };
+  }
 }

@@ -28,8 +28,7 @@ import { GenaraterDataModule } from './api/v1/genarater-data/genarater-data.modu
     SeatModule,
     RoomStateModule,
     BookingModule,
-    GenaraterDataModule
-    
+    GenaraterDataModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -1,7 +1,7 @@
 import { IsNumber, Min, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
- 
+
 export class PaginationParamsDto {
   @IsOptional()
   @Transform(({ value }) => Number(value))
@@ -12,7 +12,7 @@ export class PaginationParamsDto {
   })
   @Min(0)
   page?: number;
- 
+
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()

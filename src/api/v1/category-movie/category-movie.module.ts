@@ -5,6 +5,6 @@ import { PrismaService } from 'src/prisma.service';
 
 @Module({
   controllers: [CategoryMovieController],
-  providers: [CategoryMovieService,PrismaService]
+  providers: [CategoryMovieService, PrismaService],
 })
 export class CategoryMovieModule {}

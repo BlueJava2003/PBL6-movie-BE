@@ -1,4 +1,10 @@
-import { IsString, IsEmail, MinLength, IsNotEmpty, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  MinLength,
+  IsNotEmpty,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class forgotPasswordDTO {
@@ -9,6 +15,4 @@ export class forgotPasswordDTO {
     default: 'daohai271@gmail.com',
   })
   email: string;
-
-
 }
