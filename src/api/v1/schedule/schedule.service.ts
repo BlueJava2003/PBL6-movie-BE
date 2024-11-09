@@ -12,7 +12,8 @@ import {
 
 @Injectable()
 export class ScheduleService {
-  constructor(private readonly prisma: PrismaService) {}
+
+  constructor(private readonly prisma: PrismaService) { }
 
   dateToSeconds(timeStart: Date, timeEnd: Date): number {
     const currentTimestamp = Math.floor(new Date().getTime() / 1000);
@@ -36,7 +37,6 @@ export class ScheduleService {
     return end - start;
   }
 
-  //create Schedule
   async createSchedule(data: CreateScheduleDTO): Promise<Schedule> {
     try {
       const { timeStart, timeEnd, movieId, date } = data;
@@ -93,7 +93,6 @@ export class ScheduleService {
     }
   }
 
-  //get all Schedule
   async getAllSchedule(): Promise<GetScheduleDTO[]> {
     try {
       const result = await this.prisma.schedule.findMany({
@@ -117,6 +116,12 @@ export class ScheduleService {
               imagePath: true,
             },
           },
+          room: {
+            select: {
+              id: true,
+              roomName: true,
+            }
+          }
         },
         where: {
           deleteAt: false,
@@ -129,7 +134,7 @@ export class ScheduleService {
         timeStart: formatToVietnamTime(sch.timeStart),
         timeEnd: formatToVietnamTime(sch.timeEnd),
       }));
-
+      console.log(schedule);
       return schedule;
     } catch (error) {
       throw new HttpException(
@@ -139,7 +144,6 @@ export class ScheduleService {
     }
   }
 
-  //get Schedule id
   async getScheduleId(id: number): Promise<GetScheduleDTO> {
     try {
       const result = await this.prisma.schedule.findUnique({

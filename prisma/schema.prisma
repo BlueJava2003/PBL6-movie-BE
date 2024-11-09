@@ -70,17 +70,17 @@ model Movie {
 }
 
 model Schedule {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   date      DateTime
   timeStart DateTime
   timeEnd   DateTime
-  movie     Movie?    @relation(fields: [movieId], references: [id])
+  movie     Movie?     @relation(fields: [movieId], references: [id])
   movieId   Int?
-  room      Room?     @relation(fields: [roomId], references: [id])
+  room      Room?      @relation(fields: [roomId], references: [id])
   roomId    Int?
-  deleteAt  Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  deleteAt  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   bookings  Booking[]
   roomState RoomState?
 }

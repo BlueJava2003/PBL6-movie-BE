@@ -22,7 +22,7 @@ import { UpdateScheduleDTO } from './dto/updateSchedule.dto';
 @ApiTags('schedule')
 @Controller('schedule')
 export class ScheduleController {
-  constructor(private readonly ScheduleService: ScheduleService) {}
+  constructor(private readonly ScheduleService: ScheduleService) { }
   //create Schedule movie
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
