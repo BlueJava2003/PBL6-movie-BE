@@ -1,4 +1,4 @@
-import { IsDate, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -29,4 +29,12 @@ export class UpdateScheduleDTO {
     default: '2024-07-17 06:52:26.109',
   })
   timeEnd: Date;
+
+  @IsNumber()
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'fill to roomId',
+    default: '1',
+  })
+  roomId: number;
 }

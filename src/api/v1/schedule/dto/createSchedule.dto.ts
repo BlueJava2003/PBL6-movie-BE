@@ -34,4 +34,12 @@ export class CreateScheduleDTO {
     default: '1',
   })
   movieId: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'fill to roomId',
+    default: '1',
+  })
+  roomId: number;
 }
