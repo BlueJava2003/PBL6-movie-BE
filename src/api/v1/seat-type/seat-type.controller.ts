@@ -1,4 +1,4 @@
-import { AuthGuard } from './../auth/auth.gruad';
+import { AuthGuard } from '../auth/auth.guard';
 import {
   Controller,
   Get,
@@ -15,7 +15,7 @@ import { SeatTypeService } from './seat-type.service';
 import { CreateSeatTypeDto } from './dto/create-seat-type.dto';
 import { UpdateSeatTypeDto } from './dto/update-seat-type.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../auth/role.gruad';
+import { RolesGuard } from '../auth/role.guard';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/api/decorator/role.decorator';
 
@@ -23,7 +23,7 @@ import { Roles } from 'src/api/decorator/role.decorator';
 @Controller('seat-type')
 @ApiTags('seat-type')
 export class SeatTypeController {
-  constructor(private readonly seatTypeService: SeatTypeService) {}
+  constructor(private readonly seatTypeService: SeatTypeService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

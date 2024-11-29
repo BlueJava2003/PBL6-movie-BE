@@ -14,15 +14,15 @@ import { CategoryMovieService } from './category-movie.service';
 import { createCategoryDTO } from './dto/createCategory.dto';
 import { updateCategoryDTO } from './dto/updateCategory.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.gruad';
-import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/role.guard';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
 @ApiBearerAuth()
 @ApiTags('category-movie')
 @Controller('category-movie')
 export class CategoryMovieController {
-  constructor(private readonly categoryMovieService: CategoryMovieService) {}
+  constructor(private readonly categoryMovieService: CategoryMovieService) { }
   //create category movie
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

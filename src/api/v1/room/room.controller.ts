@@ -14,8 +14,8 @@ import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 
-import { RolesGuard } from '../auth/role.gruad';
-import { AuthGuard } from '../auth/auth.gruad';
+import { RolesGuard } from '../auth/role.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -24,7 +24,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @ApiTags('Room')
 @Controller('room')
 export class RoomController {
-  constructor(private readonly roomService: RoomService) {}
+  constructor(private readonly roomService: RoomService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

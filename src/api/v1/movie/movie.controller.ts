@@ -18,8 +18,8 @@ import { createMovieDTO } from './dto/createMovie.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { updateMovieDTO } from './dto/updateMovie.dto';
-import { AuthGuard } from '../auth/auth.gruad';
-import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/role.guard';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
 import { GetMovieFollowDay } from './dto/getMovieFollowDay.dto';
@@ -30,7 +30,7 @@ import { PaginationParamsDto } from './dto/paginationParams.dto';
 @ApiTags('movie')
 @Controller('movie')
 export class MovieController {
-  constructor(private readonly movieService: MovieService) {}
+  constructor(private readonly movieService: MovieService) { }
   //create movie
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

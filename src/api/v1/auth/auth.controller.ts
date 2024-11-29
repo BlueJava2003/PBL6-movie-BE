@@ -16,14 +16,15 @@ import { AuthService } from './auth.service';
 import { registerDto } from './dto/register.dto';
 import { refreshTokenDTO } from './dto/refreshToken.dto';
 import { changePasswordDTO } from './dto/changePassword.dto';
-import { AuthGuard } from './auth.gruad';
+import { AuthGuard } from './auth.guard';
 import { forgotPasswordDTO } from './dto/forgotPassword.dto';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
+
   //register user
   @Post('register')
   @HttpCode(HttpStatus.OK)

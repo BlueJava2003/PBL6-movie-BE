@@ -14,6 +14,7 @@ import { SeatModule } from './api/v1/seat/seat.module';
 import { RoomStateModule } from './api/v1/room-state/room-state.module';
 import { BookingModule } from './api/v1/booking/booking.module';
 import { GenaraterDataModule } from './api/v1/genarater-data/genarater-data.module';
+import { PaymentModule } from 'src/api/v1/payment/payment.module';
 
 @Module({
   imports: [
@@ -29,8 +30,9 @@ import { GenaraterDataModule } from './api/v1/genarater-data/genarater-data.modu
     RoomStateModule,
     BookingModule,
     GenaraterDataModule,
+    // PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

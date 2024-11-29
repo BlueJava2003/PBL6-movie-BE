@@ -9,7 +9,7 @@ import { compareFn } from 'src/api/util/sortSeats';
 
 @Injectable()
 export class RoomStateService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   //Create a room state with all seats exist
   async createRoomState(
@@ -145,11 +145,8 @@ export class RoomStateService {
     }
   }
 
-  //Update a room state
-  async updateRoomState(
-    schduleId: number,
-    updateRoomStateDto: UpdateRoomStateDto,
-  ) {
+  // Update a room state
+  async updateRoomState(schduleId: number, updateRoomStateDto: UpdateRoomStateDto) {
     try {
       const roomState = await this.prisma.roomState.findUnique({
         where: { scheduleId: schduleId },
@@ -162,7 +159,7 @@ export class RoomStateService {
           HttpStatus.BAD_GATEWAY,
         );
       }
-      //Check if seats are in available array
+      // Check if seats are in available array
       const verifySeats = updateRoomStateDto.seatIds.every((id) =>
         roomState.availableSeat.includes(id),
       );
@@ -173,7 +170,7 @@ export class RoomStateService {
         );
       }
 
-      //Filter out seats need to be reserved
+      // Filter out seats need to be reserved
       const updatedSeats = roomState.availableSeat.filter(
         (seatId) => !updateRoomStateDto.seatIds.includes(seatId),
       );

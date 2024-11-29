@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.gruad';
-import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/role.guard';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
 import { CreateScheduleDTO } from './dto/createSchedule.dto';

@@ -12,81 +12,129 @@ import { PaymentBookingDto } from './dto/payment-booking.dto';
 import { scheduled } from 'rxjs';
 import { UpdateRoomStateDto } from '../room-state/dto/update-room-state.dto';
 import { MailerService } from './../../mailer/mailer.service';
+import { PaymentService } from 'src/api/v1/payment/payment.service';
+import { consoleLogger, dateFormat, ignoreLogger, IpnFailChecksum, IpnSuccess, ReturnQueryFromVNPay, VerifyReturnUrl, VNPay, VnpLocale } from 'vnpay';
+import { IpnUnknownError } from 'src/api/v1/payment/constant/ipn-result-for-vnpay.constant';
+import { verify } from 'crypto';
 
 @Injectable()
 export class BookingService {
+
+  private vnpay: VNPay;
+
   constructor(
     private prisma: PrismaService,
     private roomStateService: RoomStateService,
     private mailerService: MailerService,
-  ) {}
-  //Create a booking with PENDING state
-  async createBooking(
-    accountId: number,
-    createBookingDto: CreateBookingDto,
-  ): Promise<{}> {
+  ) {
+    this.vnpay = new VNPay({
+      tmnCode: '3YEQFE65',
+      secureSecret: 'OVA796S7VWPTLFESIDADARGWPWRUERT4',
+      vnpayHost: 'https://sandbox.vnpayment.vn',
+      testMode: true,
+      enableLog: true,
+      loggerFn: ignoreLogger,
+    });
+  }
+
+  createPaymentUrl(amount: number, txnRef: string): string {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const paymentUrl = this.vnpay.buildPaymentUrl({
+      vnp_Amount: amount,
+      vnp_IpAddr: '1.1.1.1',
+      vnp_TxnRef: txnRef,
+      vnp_OrderInfo: `order information`,
+      vnp_ReturnUrl: 'https://www.facebook.com/',
+      vnp_Locale: VnpLocale.VN,
+      vnp_CreateDate: dateFormat(new Date()),
+      vnp_ExpireDate: dateFormat(tomorrow),
+    });
+    return paymentUrl;
+  }
+
+  async handleIpn(query) {
     try {
-      const { scheduleId, seatIds } = createBookingDto;
-
-      await this.validateSchedule(scheduleId);
-
-      const seatsToBook = [...new Set(seatIds)]; // Remove duplicates
-
-      if (seatsToBook.length > 8)
-        throw new HttpException(
-          'Can not book more than 8 seats at the same time!',
-          HttpStatus.BAD_REQUEST,
-        );
-      await this.validateSeatAvailability(scheduleId, seatsToBook);
-
-      await this.roomStateService.updateRoomState(scheduleId, { seatIds }); //Update room state
-
-      const totalPrice = await this.calculateTotalPrice(seatsToBook);
-
-      const booking = await this.createInitialBooking(
-        accountId,
-        scheduleId,
-        seatsToBook,
-        totalPrice,
-      );
-
-      const paymentStatus = await this.verifyPayment();
-
-      if (paymentStatus.status === 'failure') {
-        await this.handlePaymentFailure(booking, scheduleId, seatIds);
+      const verify: VerifyReturnUrl = this.vnpay.verifyIpnCall(query);
+      if (!verify) return IpnFailChecksum;
+      const bookingId = Number(verify.vnp_TxnRef);
+      if (verify.vnp_ResponseCode !== '00') {
+        const booking = await this.prisma.booking.findUnique({
+          where: {
+            id: bookingId
+          }
+        })
+        this.handlePaymentFailure(booking.id, booking.scheduleId, booking.seatsBooked);
       }
-
-      return await this.finalizeBooking(booking.id);
+      await this.finalizeBooking(bookingId);
+      return IpnSuccess;
     } catch (error) {
-      throw new HttpException(
-        error.message || 'Booking creation failed',
-        HttpStatus.BAD_REQUEST,
-      );
+      return IpnUnknownError;
     }
   }
+
+  getReturnUrl(query: any) {
+    try {
+      const result: VerifyReturnUrl = this.vnpay.verifyReturnUrl(query);
+      if (!result.isVerified) {
+        return {
+          message: result?.message ?? 'Payment failed !',
+          status: result.isSuccess
+        }
+      }
+      return {
+        message: result?.message ?? 'Payment successfull !',
+        status: result.isSuccess,
+        amount: (result.vnp_Amount).toLocaleString(),
+        bankCode: result.vnp_BankCode,
+        cardType: result.vnp_CardType,
+        payDate: result.vnp_PayDate,
+      }
+    } catch (error) {
+      return {
+        message: 'Verify error',
+        status: false,
+      };
+    }
+  }
+
+  private async handlePaymentFailure(
+    bookingId: number,
+    scheduleId: number,
+    seatIds: number[],
+  ): Promise<void> {
+    await this.prisma.booking.delete({ where: { id: bookingId } });
+    await this.resetRoomState(scheduleId, seatIds);
+    throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
+  }
+
+  // private async handlePaymentFailure(
+  //   booking: Booking,
+  //   scheduleId: number,
+  //   seatIds: number[],
+  // ): Promise<void> {
+  //   await this.prisma.booking.delete({ where: { id: booking.id } });
+  //   await this.resetRoomState(scheduleId, seatIds);
+  //   throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
+  // }
 
   private async validateSchedule(scheduleId: number): Promise<void> {
     const schedule = await this.prisma.schedule.findUnique({
       where: { id: scheduleId },
     });
-    if (!schedule) {
-      throw new HttpException('Schedule not found!', HttpStatus.BAD_REQUEST);
-    }
+    if (!schedule) throw new HttpException('Schedule not found!', HttpStatus.BAD_REQUEST);
   }
 
-  private async validateSeatAvailability(
-    scheduleId: number,
-    seatIds: number[],
-  ): Promise<void> {
+  private async validateSeatAvailability(scheduleId: number, seatIds: number[]): Promise<void> {
     const roomState = await this.prisma.roomState.findUnique({
       where: { scheduleId },
       include: {
         schedule: true,
       },
     });
-    if (!roomState) {
-      throw new HttpException('No room state found!', HttpStatus.BAD_REQUEST);
-    }
+
+    if (!roomState) throw new HttpException('No room state found!', HttpStatus.BAD_REQUEST);
+
     const startTime = new Date(roomState.schedule.timeStart);
     const now = Date.now();
     if (now > startTime.getTime()) {
@@ -95,9 +143,8 @@ export class BookingService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const unavailableSeats = seatIds.filter((id) =>
-      roomState.unavailableSeat.includes(id),
-    );
+
+    const unavailableSeats = seatIds.filter((id) => roomState.unavailableSeat.includes(id));
 
     if (unavailableSeats.length > 0) {
       throw new HttpException(
@@ -112,7 +159,90 @@ export class BookingService {
       where: { id: { in: seatIds } },
       include: { seatType: true },
     });
+    console.log('price => ', seats.reduce((total, seat) => total + seat.seatType.price, 0))
     return seats.reduce((total, seat) => total + seat.seatType.price, 0);
+  }
+
+  async verifyPayment(): Promise<{ status: string; message: string }> {
+    // Wait 5s
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    return { status: 'success', message: 'Token is valid' };
+  }
+
+  // Create a booking with PENDING state
+  // async createBooking(accountId: number, createBookingDto: CreateBookingDto): Promise<{}> {
+  //   try {
+  //     const { scheduleId, seatIds } = createBookingDto;
+
+  //     await this.validateSchedule(scheduleId);
+
+  //     const seatsToBook = [...new Set(seatIds)]; // Remove duplicates
+
+  //     if (seatsToBook.length > 8) {
+  //       throw new HttpException(
+  //         'Can not book more than 8 seats at the same time!',
+  //         HttpStatus.BAD_REQUEST,
+  //       );
+  //     }
+
+  //     await this.validateSeatAvailability(scheduleId, seatsToBook);
+
+  //     await this.roomStateService.updateRoomState(scheduleId, { seatIds }); //Update room state
+
+  //     const totalPrice = await this.calculateTotalPrice(seatsToBook);
+
+  //     const booking = await this.createInitialBooking(
+  //       accountId,
+  //       scheduleId,
+  //       seatsToBook,
+  //       totalPrice,
+  //     );
+
+  //     const paymentStatus = await this.verifyPayment();
+
+  //     if (paymentStatus.status === 'failure') {
+  //       await this.handlePaymentFailure(booking, scheduleId, seatIds);
+  //     }
+
+  //     return await this.finalizeBooking(booking.id);
+  //   } catch (error) {
+  //     throw new HttpException(error.message || 'Booking creation failed', HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
+  // Create a booking with PENDING state
+  async createBooking(accountId: number, createBookingDto: CreateBookingDto): Promise<{}> {
+    try {
+      const { scheduleId, seatIds } = createBookingDto;
+
+      await this.validateSchedule(scheduleId);
+
+      const seatsToBook = [...new Set(seatIds)]; // Remove duplicates
+
+      if (seatsToBook.length > 8) {
+        throw new HttpException(
+          'Can not book more than 8 seats at the same time!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.validateSeatAvailability(scheduleId, seatsToBook);
+
+      await this.roomStateService.updateRoomState(scheduleId, { seatIds }); //Update room state
+
+      const totalPrice = await this.calculateTotalPrice(seatsToBook);
+
+      const booking = await this.createInitialBooking(
+        accountId,
+        scheduleId,
+        seatsToBook,
+        totalPrice,
+      );
+
+      return this.createPaymentUrl(totalPrice, booking.id.toString())
+    } catch (error) {
+      throw new HttpException(error.message || 'Booking creation failed', HttpStatus.BAD_REQUEST);
+    }
   }
 
   private async createInitialBooking(
@@ -130,16 +260,6 @@ export class BookingService {
         state: State.PENDING,
       },
     });
-  }
-
-  private async handlePaymentFailure(
-    booking: Booking,
-    scheduleId: number,
-    seatIds: number[],
-  ): Promise<void> {
-    await this.prisma.booking.delete({ where: { id: booking.id } });
-    await this.resetRoomState(scheduleId, seatIds);
-    throw new HttpException('Payment failure!', HttpStatus.BAD_REQUEST);
   }
 
   private async resetRoomState(
@@ -162,7 +282,7 @@ export class BookingService {
     });
   }
 
-  private async finalizeBooking(bookingId: number): Promise<{}> {
+  async finalizeBooking(bookingId: number): Promise<{}> {
     const successBooking = await this.prisma.booking.update({
       where: { id: bookingId },
       data: { state: State.SUCCESS },
@@ -215,17 +335,7 @@ export class BookingService {
       `Xin chào ${successBooking.account.fullname}, đây là thông tin đặt vé xem phim của bạn.`,
       this.mailerService.createHtml(emailContext), //Create HTML to send email
     );
-
     return successBooking;
-  }
-  async verifyPayment(): Promise<{ status: string; message: string }> {
-    // Wait 5s
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    return {
-      status: 'success',
-      message: 'Token is valid',
-    };
   }
 
   async findAllHistory(): Promise<{}> {
@@ -312,7 +422,8 @@ export class BookingService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
-  //Find booking history of user
+
+  // Find booking history of user
   async findUserBookingHistory(
     accountId: number,
     bookingId: number,
@@ -357,7 +468,7 @@ export class BookingService {
       if (!booking)
         throw new HttpException('No booking found!', HttpStatus.BAD_REQUEST);
 
-      //Get seat info to add into response
+      // Get seat info to add into response
       const seatsInfo = await this.prisma.seat.findMany({
         where: {
           id: {
@@ -371,7 +482,7 @@ export class BookingService {
         },
       });
 
-      //Format response
+      // Format response
       const timeStart = `${formatToVietnamDay(booking.schedule.timeStart)} ${formatToVietnamTime(booking.schedule.timeStart)}`;
       const timeEnd = `${formatToVietnamDay(booking.schedule.timeEnd)} ${formatToVietnamTime(booking.schedule.timeEnd)}`;
 
@@ -390,7 +501,7 @@ export class BookingService {
     }
   }
 
-  //Just for changing seat position with SUCCESS bookings (ADMIN)
+  // Just for changing seat position with SUCCESS bookings (ADMIN)
   async updateBooking(
     bookingId: number,
     updateBookingDto: UpdateBookingDto,

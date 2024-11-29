@@ -16,15 +16,15 @@ import { CreateManySeatsDto } from './dto/create-many-seats.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
 import { Roles } from 'src/api/decorator/role.decorator';
 import { Role } from '@prisma/client';
-import { AuthGuard } from '../auth/auth.gruad';
-import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/role.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('Seat')
 @Controller('seat')
 export class SeatController {
-  constructor(private readonly seatService: SeatService) {}
+  constructor(private readonly seatService: SeatService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

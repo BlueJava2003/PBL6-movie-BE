@@ -4,37 +4,37 @@ import { MailerOptions } from './mailer-options.interface';
 
 @Injectable()
 export class MailerService {
-  private transporter: nodemailer.Transporter;
+    private transporter: nodemailer.Transporter;
 
-  constructor() {
-    const options: MailerOptions = {
-      service: 'gmail',
-      port: 465,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    };
-    this.transporter = nodemailer.createTransport(options);
-  }
-
-  async sendMail(to: string, subject: string, text: string, html: string) {
-    try {
-      const info = await this.transporter.sendMail({
-        from: 'haidx@kdhm-solutions.com',
-        to,
-        subject,
-        text,
-        html,
-      });
-      return info;
-    } catch (error) {
-      throw error;
+    constructor() {
+        const options: MailerOptions = {
+            service: 'gmail',
+            port: 465,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        };
+        this.transporter = nodemailer.createTransport(options);
     }
-  }
-  createHtml(context: any): string {
-    return `
+
+    async sendMail(to: string, subject: string, text: string, html: string) {
+        try {
+            const info = await this.transporter.sendMail({
+                from: 'nghiatrung2112003@gmail.com',
+                to,
+                subject,
+                text,
+                html,
+            });
+            return info;
+        } catch (error) {
+            throw error;
+        }
+    }
+    createHtml(context: any): string {
+        return `
       <!DOCTYPE html>
       <html lang="vi">
       <head>
@@ -148,5 +148,5 @@ export class MailerService {
       </body>
       </html>
     `;
-  }
+    }
 }

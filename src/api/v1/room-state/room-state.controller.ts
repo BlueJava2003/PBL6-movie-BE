@@ -14,15 +14,15 @@ import { RoomStateService } from './room-state.service';
 import { CreateRoomStateDto } from './dto/create-room-state.dto';
 import { UpdateRoomStateDto } from './dto/update-room-state.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.gruad';
-import { RolesGuard } from '../auth/role.gruad';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/role.guard';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/api/decorator/role.decorator';
 @ApiBearerAuth()
 @ApiTags('Room State')
 @Controller('room-state')
 export class RoomStateController {
-  constructor(private readonly roomStateService: RoomStateService) {}
+  constructor(private readonly roomStateService: RoomStateService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

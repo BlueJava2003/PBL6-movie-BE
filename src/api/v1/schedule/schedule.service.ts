@@ -40,7 +40,9 @@ export class ScheduleService {
 
   async createSchedule(data: CreateScheduleDTO): Promise<Schedule> {
     try {
+
       const { timeStart, timeEnd, date, movieId, roomId } = data;
+
       const localTimeStart = addHours(timeStart, 7);
       const localTimeEnd = addHours(timeEnd, 7);
       const localDate = addHours(date, 7);
@@ -195,13 +197,12 @@ export class ScheduleService {
     }
   }
 
-  async updateSchedule(id: number, updateScheduleDTO: UpdateScheduleDTO): Promise<Schedule> {
+  async updateSchedule(id: number, updateDate: UpdateScheduleDTO): Promise<Schedule> {
     try {
-      const { timeStart, timeEnd, date, roomId } = updateScheduleDTO;
+      const { timeStart, timeEnd, date, roomId } = updateDate;
       const localTimeStart = addHours(timeStart, 7);
       const localTimeEnd = addHours(timeEnd, 7);
       const localDate = addHours(date, 7);
-
       const existed = await this.getScheduleById(id);
       if (!existed)
         throw new HttpException('Schedule not found', HttpStatus.BAD_REQUEST);
@@ -211,7 +212,7 @@ export class ScheduleService {
           deleteAt: false,
         },
         data: {
-          ...updateScheduleDTO,
+          ...updateDate,
           date: localDate,
           timeStart: localTimeStart,
           timeEnd: localTimeEnd
@@ -223,6 +224,7 @@ export class ScheduleService {
     }
   }
 
+  //delete Schedule
   async deleteSchedule(id: number): Promise<void> {
     try {
       const exited = await this.getScheduleById(id);

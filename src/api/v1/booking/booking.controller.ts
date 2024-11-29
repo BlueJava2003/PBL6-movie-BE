@@ -12,35 +12,52 @@ import {
   ParseIntPipe,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
-import { AuthGuard } from '../auth/auth.gruad';
+import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaymentBookingDto } from './dto/payment-booking.dto';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/api/decorator/role.decorator';
-import { RolesGuard } from '../auth/role.gruad';
+import { RolesGuard } from '../auth/role.guard';
+import { ReturnQueryFromVNPay, VerifyReturnUrl } from 'vnpay';
+import { Response } from 'express';
 
 @ApiBearerAuth()
 @ApiTags('Booking')
 @Controller('booking')
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) {}
+
+  constructor(private readonly bookingService: BookingService) { }
 
   @UseGuards(AuthGuard)
   @Post()
-  @HttpCode(200)
-  async createBooking(
-    @Req() req,
-    @Body() createBookingDto: CreateBookingDto,
-  ): Promise<{ message: string; res: any }> {
+  @HttpCode(201)
+  async createBooking(@Req() req, @Body() createBookingDto: CreateBookingDto): Promise<{ message: string; res: any }> {
     const booking = await this.bookingService.createBooking(
       req.payload.id,
       createBookingDto,
     );
     return { message: 'Create successfully!', res: booking };
+  }
+
+  @Get('vnpay-ipn')
+  async handleIpn(@Query() query, @Res() res: Response) {
+    const result = await this.bookingService.handleIpn(query);
+    return res.json(result);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('vnpay-return')
+  getReturnUrl(@Query() query, @Res() res: Response) {
+    const paymentResult = this.bookingService.getReturnUrl(query);
+    if (!paymentResult.status) {
+      return res.status(400).json(paymentResult);
+    }
+    return res.status(200).json(paymentResult);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -109,6 +126,7 @@ export class BookingController {
     );
     return { message: 'Successfull!', res: booking };
   }
+
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
