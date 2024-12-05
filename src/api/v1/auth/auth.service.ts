@@ -59,12 +59,12 @@ export class AuthService {
 
   async register(registerDto: registerDto): Promise<Auth> {
     try {
-      const exited = await this.prisma.auth.findUnique({
+      const existed = await this.prisma.auth.findUnique({
         where: {
           email: registerDto.email,
         },
       });
-      if (exited)
+      if (existed)
         throw new HttpException(
           'Email already exits. Please use another email',
           HttpStatus.CONFLICT,
@@ -74,6 +74,7 @@ export class AuthService {
       const createAccount = await this.prisma.auth.create({
         data: {
           ...registerDto,
+          role: 'USER',
           password: hashPassword,
         },
       });
@@ -234,11 +235,16 @@ export class AuthService {
     }
   }
 
-  async getInfoUser(userId: number): Promise<string> {
+  async getInfoUser(userId: number): Promise<{ fullname: string, role: any }> {
     const user = await this.prisma.auth.findUnique({
       where: { id: userId },
+      select: { fullname: true, role: true }
     });
-    return user.fullname;
+    console.log(user)
+    return {
+      fullname: `${user.fullname}`,
+      role: user.role,
+    };
   }
 
 }
