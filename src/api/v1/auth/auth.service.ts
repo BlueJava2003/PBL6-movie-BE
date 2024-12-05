@@ -16,16 +16,19 @@ import { forgotPasswordDTO } from './dto/forgotPassword.dto';
 import { MailerService } from 'src/api/mailer/mailer.service';
 @Injectable()
 export class AuthService {
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
+
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     return bcrypt.hash(password, salt);
   }
+
   private async generateToken(payload: {
     id: number;
     email: string;
@@ -41,9 +44,9 @@ export class AuthService {
         secret: process.env.JWT_SECRET_KEY,
       }),
     ]);
-
     return { accessToken, refresh_token };
   }
+
   private async generateRandomPassword(length: number = 10): Promise<string> {
     const charset =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
@@ -53,6 +56,7 @@ export class AuthService {
     }
     return password;
   }
+
   async register(registerDto: registerDto): Promise<Auth> {
     try {
       const exited = await this.prisma.auth.findUnique({
@@ -79,6 +83,7 @@ export class AuthService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
   async login(
     loginDto: LoginDTO,
   ): Promise<{ accessToken: string; refresh_token: string }> {
@@ -109,6 +114,7 @@ export class AuthService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
   async refreshToken(
     refreshTokenDto: refreshTokenDTO,
   ): Promise<{ accessToken: string; refresh_token: string }> {
@@ -227,4 +233,12 @@ export class AuthService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async getInfoUser(userId: number): Promise<string> {
+    const user = await this.prisma.auth.findUnique({
+      where: { id: userId },
+    });
+    return user.fullname;
+  }
+
 }

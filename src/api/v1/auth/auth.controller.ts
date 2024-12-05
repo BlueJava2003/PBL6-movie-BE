@@ -9,6 +9,8 @@ import {
   Req,
   HttpException,
   Get,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { LoginDTO } from './dto/login.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -23,9 +25,9 @@ import { forgotPasswordDTO } from './dto/forgotPassword.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
+
   constructor(private readonly authService: AuthService) { }
 
-  //register user
   @Post('register')
   @HttpCode(HttpStatus.OK)
   async register(
@@ -35,14 +37,14 @@ export class AuthController {
     delete result.password;
     return { message: 'Create account successfully!', res: result };
   }
-  //login
+
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() body: LoginDTO): Promise<{ message: string; res: any }> {
     const result = await this.authService.login(body);
     return { message: 'Logged in successfully!', res: result };
   }
-  //refresh
+
   @Post('refreshToken')
   @HttpCode(HttpStatus.OK)
   async refreshToken(
@@ -51,7 +53,7 @@ export class AuthController {
     const result = await this.authService.refreshToken(body);
     return { message: 'Refresh token in successfully!', res: result };
   }
-  //changePassword
+
   @UseGuards(AuthGuard)
   @Post('changePassword')
   @HttpCode(HttpStatus.OK)
@@ -78,7 +80,6 @@ export class AuthController {
     }
   }
 
-  //forgotPassword
   @Post('forgotPassword')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
@@ -93,7 +94,6 @@ export class AuthController {
     }
   }
 
-  //logout
   @UseGuards(AuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
@@ -109,4 +109,12 @@ export class AuthController {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  async getFullnameUser(@Param('id', ParseIntPipe) id: number,): Promise<any> {
+    const fullName = await this.authService.getInfoUser(id)
+    return { res: fullName }
+  }
+
 }

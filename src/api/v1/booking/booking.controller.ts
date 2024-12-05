@@ -50,15 +50,15 @@ export class BookingController {
     return res.json(result);
   }
 
-  @UseGuards(AuthGuard)
-  @Get('vnpay-return')
-  getReturnUrl(@Query() query, @Res() res: Response) {
-    const paymentResult = this.bookingService.getReturnUrl(query);
-    if (!paymentResult.status) {
-      return res.status(400).json(paymentResult);
-    }
-    return res.status(200).json(paymentResult);
-  }
+  // @UseGuards(AuthGuard)
+  // @Get('vnpay-return')
+  // getReturnUrl(@Query() query, @Res() res: Response) {
+  //   const paymentResult = this.bookingService.getReturnUrl(query);
+  //   if (!paymentResult.status) {
+  //     return res.status(400).json(paymentResult);
+  //   }
+  //   return res.status(200).json(paymentResult);
+  // }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

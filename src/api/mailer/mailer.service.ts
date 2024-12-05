@@ -33,6 +33,7 @@ export class MailerService {
             throw error;
         }
     }
+
     createHtml(context: any): string {
         return `
       <!DOCTYPE html>
@@ -113,7 +114,7 @@ export class MailerService {
       <body>
           <div class="container">
               <div class="header">
-                  <h1>${context.movieName}t</h1>
+                  <h1>${context.movieName}</h1>
               </div>
               <div class="content">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/736px-QR_Code_Example.svg.png?20111025115625" class="qr-code" alt="QR Image">

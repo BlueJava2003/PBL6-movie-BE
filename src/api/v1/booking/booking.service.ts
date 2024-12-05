@@ -45,7 +45,8 @@ export class BookingService {
       vnp_IpAddr: '1.1.1.1',
       vnp_TxnRef: txnRef,
       vnp_OrderInfo: `order information`,
-      vnp_ReturnUrl: 'https://www.facebook.com/',
+      // vnp_ReturnUrl: 'https://www.facebook.com/',
+      vnp_ReturnUrl: 'http://localhost:3000/ticket-info',
       vnp_Locale: VnpLocale.VN,
       vnp_CreateDate: dateFormat(new Date()),
       vnp_ExpireDate: dateFormat(tomorrow),
@@ -54,6 +55,7 @@ export class BookingService {
   }
 
   async handleIpn(query) {
+    console.log('vao')
     try {
       const verify: VerifyReturnUrl = this.vnpay.verifyIpnCall(query);
       if (!verify) return IpnFailChecksum;
