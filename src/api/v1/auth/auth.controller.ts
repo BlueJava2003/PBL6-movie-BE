@@ -112,9 +112,13 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get(':id')
-  async getFullnameUser(@Param('id', ParseIntPipe) id: number,): Promise<any> {
-    const fullName = await this.authService.getInfoUser(id)
-    return { res: fullName }
+  async getInfoUser(@Param('id', ParseIntPipe) id: number,): Promise<{ res: any }> {
+    try {
+      const result = await this.authService.getInfoUser(id);
+      return { res: result }
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST)
+    }
   }
 
 }
