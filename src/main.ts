@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { GlobalResponseInterceptor } from './api/interceptor/res.interceptor';
 import { HttpExceptionFilter } from './api/filters/global-exception.filter';
 import { NextFunction, Request, Response } from 'express';
+import { hostname } from 'os';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   app.enableCors();
@@ -26,6 +27,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  await app.listen(3001);
+  // await app.listen(3001);
+  await app.listen(process.env.PORT, '0.0.0.0');
 }
 bootstrap();
